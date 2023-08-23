@@ -4,6 +4,7 @@ CFLAGS=\
 	-std=c11 \
 	-fshort-enums \
 	-fsanitize=address,undefined \
+	-fwrapv \
 	-g3 \
 	-W \
 	-Wall \
