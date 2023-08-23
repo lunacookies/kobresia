@@ -2,7 +2,7 @@
 
 enum {
 	PERM_MEM_SIZE = 1 * MEBIBYTE,
-	TEMP_MEM_SIZE = 1 * MEBIBYTE,
+	TEMP_MEM_SIZE = 100 * MEBIBYTE,
 };
 
 static usize

@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <dirent.h>
 #include <pthread.h>
 #include <stdalign.h>
 #include <stdbool.h>
@@ -101,3 +102,20 @@ struct diagnostics_store {
 };
 
 struct diagnostics_store create_diagnostics_store(struct mem *m);
+
+// project.c
+
+struct project {
+	char *names;
+	u32 *name_starts;
+
+	char *paths;
+	u32 *path_starts;
+
+	u32 *pkg_first_files;
+	u32 *pkg_file_counts;
+	u32 *pkg_ids;
+	u32 pkg_count;
+};
+
+struct project discover_project(struct mem *m);
