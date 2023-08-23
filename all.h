@@ -41,6 +41,8 @@ void split_off(struct s *s, usize n, struct s *fst, struct s *snd);
 void *_alloc(struct s *s, usize size, usize align);
 #define alloc(s, t, n) (_alloc((s), sizeof(t) * (n), alignof(t)))
 struct s alloc_s(struct s *s, usize size);
+void alloc_copy(struct s *s, void *data, usize size, usize align);
+usize s_used(struct s *s);
 
 // early_death.c
 

@@ -44,3 +44,16 @@ alloc_s(struct s *s, usize size)
 	s->n -= size;
 	return new;
 }
+
+void
+alloc_copy(struct s *s, void *data, usize size, usize align)
+{
+	u8 *p = _alloc(s, size, align);
+	memcpy(p, data, size);
+}
+
+usize
+s_used(struct s *s)
+{
+	return s->p - s->top;
+}
