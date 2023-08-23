@@ -6,14 +6,6 @@ create_s(u8 *p, usize n)
 	return (struct s){ .top = p, .p = p, .n = n };
 }
 
-void
-split_off(struct s *s, usize n, struct s *fst, struct s *snd)
-{
-	*fst = create_s(s->p, n);
-	*snd = create_s(s->p + n, s->n - n);
-	*s = create_s(NULL, 0);
-}
-
 void *
 _alloc(struct s *s, usize size, usize align)
 {

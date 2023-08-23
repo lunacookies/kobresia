@@ -36,7 +36,6 @@ struct s {
 	((struct s){ .top = (u8 *)(str), .p = (u8 *)(str), .n = strlen(str) })
 
 struct s create_s(u8 *p, usize n);
-void split_off(struct s *s, usize n, struct s *fst, struct s *snd);
 
 void *_alloc(struct s *s, usize size, usize align);
 #define alloc(s, t, n) (_alloc((s), sizeof(t) * (n), alignof(t)))
