@@ -38,10 +38,8 @@ _alloc(struct s *s, usize size, usize align)
 struct s
 alloc_s(struct s *s, usize size)
 {
-	assert(s->n >= size);
-	struct s new = create_s(s->p, size);
-	s->p += size;
-	s->n -= size;
+	void *p = _alloc(s, size, 1);
+	struct s new = create_s(p, size);
 	return new;
 }
 
