@@ -32,6 +32,8 @@ _alloc(struct s *s, usize size, usize align)
 	s->p += size;
 	s->n -= size;
 
+	memset(p, '*', size);
+
 	return p;
 }
 
