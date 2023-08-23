@@ -14,7 +14,7 @@ page_size(void)
 		early_death(sstr("failed to get page size"));
 	}
 
-	return s;
+	return (usize)s;
 }
 
 struct s

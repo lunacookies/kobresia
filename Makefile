@@ -9,11 +9,11 @@ CFLAGS=\
 	-Wall \
 	-Wextra \
 	-Wpedantic \
+	-Wconversion \
 	-Wimplicit-fallthrough \
-	-Wimplicit-int-conversion \
+	-Wmissing-prototypes \
 	-Wshadow \
 	-Wstrict-prototypes \
-	-Wmissing-prototypes \
 	-Wno-unused-parameter
 
 NAME=kobresia

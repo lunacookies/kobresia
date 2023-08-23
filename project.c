@@ -24,8 +24,8 @@ discover_project(struct mem *m)
 
 	u32 *pkg_ids = alloc(&m->temp, u32, MAX_PKGS);
 
-	usize entities_count = 0;
-	usize pkg_count = 0;
+	u32 entities_count = 0;
+	u32 pkg_count = 0;
 
 	DIR *root = opendir(".");
 
@@ -58,11 +58,11 @@ discover_project(struct mem *m)
 			}
 			file_count++;
 
-			name_starts[entities_count] = s_used(&names);
+			name_starts[entities_count] = (u32)s_used(&names);
 			alloc_copy(&names, file_entry->d_name,
 			        file_entry->d_namlen, 1);
 
-			path_starts[entities_count] = s_used(&paths);
+			path_starts[entities_count] = (u32)s_used(&paths);
 
 			alloc_copy(&paths, pkg_entry->d_name,
 			        pkg_entry->d_namlen, 1);
@@ -80,10 +80,10 @@ discover_project(struct mem *m)
 			continue;
 		}
 
-		name_starts[entities_count] = s_used(&names);
+		name_starts[entities_count] = (u32)s_used(&names);
 		alloc_copy(&names, pkg_entry->d_name, pkg_entry->d_namlen, 1);
 
-		path_starts[entities_count] = s_used(&paths);
+		path_starts[entities_count] = (u32)s_used(&paths);
 		alloc_copy(&paths, pkg_entry->d_name, pkg_entry->d_namlen, 1);
 
 		pkg_first_files[pkg_count] = first_file;
@@ -97,8 +97,8 @@ discover_project(struct mem *m)
 		assert(pkg_count <= MAX_PKGS);
 	}
 
-	name_starts[entities_count] = s_used(&names);
-	path_starts[entities_count] = s_used(&paths);
+	name_starts[entities_count] = (u32)s_used(&names);
+	path_starts[entities_count] = (u32)s_used(&paths);
 
 	return (struct project){
 		.names = (char *)names.top,

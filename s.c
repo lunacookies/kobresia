@@ -55,5 +55,5 @@ alloc_copy(struct s *s, void *data, usize size, usize align)
 usize
 s_used(struct s *s)
 {
-	return s->p - s->top;
+	return (usize)(s->p - s->top);
 }
