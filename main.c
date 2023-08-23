@@ -34,8 +34,8 @@ main(void)
 		u32 path_length = path_end - path_start;
 		char *path = &proj.paths[path_start];
 
-		printf("\nname: %.*s\n", name_length, name);
-		printf("path: %.*s\n", path_length, path);
+		printf("\nname: (%d) %.*s\n", name_length, name_length, name);
+		printf("path: (%d) %.*s\n", path_length, path_length, path);
 
 		u32 file_count = proj.pkg_file_counts[i];
 		u32 first_file = proj.pkg_first_files[i];
@@ -52,8 +52,10 @@ main(void)
 			u32 file_path_length = file_path_end - file_path_start;
 			char *file_path = &proj.paths[file_path_start];
 
-			printf("\n\tname: %.*s\n", file_name_length, file_name);
-			printf("\tpath: %.*s\n", file_path_length, file_path);
+			printf("\n\tname: (%d) %.*s\n", file_name_length,
+			        file_name_length, file_name);
+			printf("\tpath: (%d) %.*s\n", file_path_length,
+			        file_path_length, file_path);
 		}
 	}
 
