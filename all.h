@@ -30,7 +30,7 @@ typedef size_t usize;
 
 struct s {
 	u8 *p;
-	usize n, total;
+	usize n, total, temp_count;
 };
 #define sstr(str) (create_s_full((u8 *)(str), sizeof(str) - 1))
 
@@ -44,6 +44,14 @@ void *_alloc_copy(struct s *s, void *data, usize size, usize align);
 #define alloc_copy(s, t, v, n)                                                 \
 	((t *)_alloc_copy((s), (v), sizeof(t) * (n), alignof(t)))
 void *alloc_copy_s(struct s *s, struct s from, usize align);
+
+struct s_temp {
+	struct s *s;
+	usize n;
+};
+
+struct s_temp s_temp_begin(struct s *s);
+void s_temp_end(struct s_temp t);
 
 // early_death.c
 

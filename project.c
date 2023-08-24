@@ -13,6 +13,8 @@ enum {
 struct project
 discover_project(struct mem *m)
 {
+	struct s_temp t = s_temp_begin(&m->temp);
+
 	struct s names = alloc_s(&m->temp, MAX_NAMES_BYTES, 1);
 	struct s paths = alloc_s(&m->temp, MAX_PATHS_BYTES, 1);
 
@@ -117,6 +119,8 @@ discover_project(struct mem *m)
 	pkg_file_counts = alloc_copy(&m->perm, u32, pkg_file_counts, pkg_count);
 
 	pkg_ids = alloc_copy(&m->perm, u32, pkg_ids, pkg_count);
+
+	s_temp_end(t);
 
 	return (struct project){
 		.names = names_p,

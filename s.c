@@ -7,6 +7,7 @@ create_s(u8 *p, usize n)
 		.p = p,
 		.n = 0,
 		.total = n,
+		.temp_count = 0,
 	};
 }
 
@@ -17,6 +18,7 @@ create_s_full(u8 *p, usize n)
 		.p = p,
 		.n = n,
 		.total = n,
+		.temp_count = 0,
 	};
 }
 
@@ -59,4 +61,22 @@ alloc_copy_s(struct s *s, struct s from, usize align)
 	u8 *p = _alloc(s, from.n, align);
 	memcpy(p, from.p, from.n);
 	return p;
+}
+
+struct s_temp
+s_temp_begin(struct s *s)
+{
+	s->temp_count++;
+	return (struct s_temp){
+		.s = s,
+		.n = s->n,
+	};
+}
+
+void
+s_temp_end(struct s_temp t)
+{
+	assert(t.s->temp_count > 0);
+	t.s->temp_count--;
+	t.s->n = t.n;
 }
