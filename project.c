@@ -24,7 +24,7 @@ discover_project(struct mem *m)
 
 	u32 *pkg_ids = alloc(&m->temp, u32, MAX_PKGS);
 
-	u32 entities_count = 0;
+	u32 entity_count = 0;
 	u32 pkg_count = 0;
 
 	DIR *root = opendir(".");
@@ -54,15 +54,15 @@ discover_project(struct mem *m)
 			}
 
 			if (file_count == 0) {
-				first_file = entities_count;
+				first_file = entity_count;
 			}
 			file_count++;
 
-			name_starts[entities_count] = (u32)s_used(&names);
+			name_starts[entity_count] = (u32)s_used(&names);
 			alloc_copy(&names, file_entry->d_name,
 			        file_entry->d_namlen, 1);
 
-			path_starts[entities_count] = (u32)s_used(&paths);
+			path_starts[entity_count] = (u32)s_used(&paths);
 
 			alloc_copy(&paths, pkg_entry->d_name,
 			        pkg_entry->d_namlen, 1);
@@ -73,41 +73,63 @@ discover_project(struct mem *m)
 			alloc_copy(&paths, file_entry->d_name,
 			        file_entry->d_namlen, 1);
 
-			entities_count++;
+			entity_count++;
 		}
 
 		if (file_count == 0) {
 			continue;
 		}
 
-		name_starts[entities_count] = (u32)s_used(&names);
+		name_starts[entity_count] = (u32)s_used(&names);
 		alloc_copy(&names, pkg_entry->d_name, pkg_entry->d_namlen, 1);
 
-		path_starts[entities_count] = (u32)s_used(&paths);
+		path_starts[entity_count] = (u32)s_used(&paths);
 		alloc_copy(&paths, pkg_entry->d_name, pkg_entry->d_namlen, 1);
 
 		pkg_first_files[pkg_count] = first_file;
 		pkg_file_counts[pkg_count] = file_count;
-		pkg_ids[pkg_count] = entities_count;
+		pkg_ids[pkg_count] = entity_count;
 
-		entities_count++;
+		entity_count++;
 		pkg_count++;
 
-		assert(entities_count <= MAX_ENTITIES);
+		assert(entity_count <= MAX_ENTITIES);
 		assert(pkg_count <= MAX_PKGS);
 	}
 
-	name_starts[entities_count] = (u32)s_used(&names);
-	path_starts[entities_count] = (u32)s_used(&paths);
+	name_starts[entity_count] = (u32)s_used(&names);
+	path_starts[entity_count] = (u32)s_used(&paths);
 
 	return (struct project){
 		.names = (char *)names.top,
-		.name_starts = name_starts,
 		.paths = (char *)paths.top,
+		.name_starts = name_starts,
 		.path_starts = path_starts,
+		.entity_count = entity_count,
+
 		.pkg_first_files = pkg_first_files,
 		.pkg_file_counts = pkg_file_counts,
 		.pkg_ids = pkg_ids,
 		.pkg_count = pkg_count,
 	};
+}
+
+struct s
+project_entity_name(struct project *p, u32 id)
+{
+	assert(id < p->entity_count);
+	u32 start = p->name_starts[id];
+	u32 end = p->name_starts[id + 1];
+	u32 length = end - start;
+	return create_s((u8 *)&p->names[start], length);
+}
+
+struct s
+project_entity_path(struct project *p, u32 id)
+{
+	assert(id < p->entity_count);
+	u32 start = p->path_starts[id];
+	u32 end = p->path_starts[id + 1];
+	u32 length = end - start;
+	return create_s((u8 *)&p->paths[start], length);
 }
