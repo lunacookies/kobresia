@@ -59,22 +59,22 @@ discover_project(struct mem *m)
 			file_count++;
 
 			name_starts[entity_count] = (u32)names.n;
-			alloc_copy(&names, file_entry->d_name,
-			        file_entry->d_namlen, 1);
+			alloc_copy(&names, u8, file_entry->d_name,
+			        file_entry->d_namlen);
 
 			path_starts[entity_count] = (u32)paths.n;
 
-			alloc_copy(&paths, pkg_entry->d_name,
-			        pkg_entry->d_namlen, 1);
+			alloc_copy(&paths, u8, pkg_entry->d_name,
+			        pkg_entry->d_namlen);
 
 			u8 slash = '/';
-			alloc_copy(&paths, &slash, 1, 1);
+			alloc_copy(&paths, u8, &slash, 1);
 
-			alloc_copy(&paths, file_entry->d_name,
-			        file_entry->d_namlen, 1);
+			alloc_copy(&paths, u8, file_entry->d_name,
+			        file_entry->d_namlen);
 
 			u8 null = 0;
-			alloc_copy(&paths, &null, 1, 1);
+			alloc_copy(&paths, u8, &null, 1);
 
 			entity_count++;
 		}
@@ -84,13 +84,13 @@ discover_project(struct mem *m)
 		}
 
 		name_starts[entity_count] = (u32)names.n;
-		alloc_copy(&names, pkg_entry->d_name, pkg_entry->d_namlen, 1);
+		alloc_copy(&names, u8, pkg_entry->d_name, pkg_entry->d_namlen);
 
 		path_starts[entity_count] = (u32)paths.n;
-		alloc_copy(&paths, pkg_entry->d_name, pkg_entry->d_namlen, 1);
+		alloc_copy(&paths, u8, pkg_entry->d_name, pkg_entry->d_namlen);
 
 		u8 null = 0;
-		alloc_copy(&paths, &null, 1, 1);
+		alloc_copy(&paths, u8, &null, 1);
 
 		pkg_first_files[pkg_count] = first_file;
 		pkg_file_counts[pkg_count] = file_count;
