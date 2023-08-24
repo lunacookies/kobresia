@@ -55,6 +55,18 @@ discover_project(struct mem *m)
 				continue;
 			}
 
+			if (file_entry->d_namlen < 4) {
+				continue;
+			}
+
+			char expected_ext[3] = ".kb";
+			char *actual_ext =
+			        file_entry->d_name + file_entry->d_namlen - 3;
+
+			if (memcmp(expected_ext, actual_ext, 3) != 0) {
+				continue;
+			}
+
 			if (file_count == 0) {
 				first_file = entity_count;
 			}
