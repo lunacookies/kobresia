@@ -29,19 +29,18 @@ typedef size_t usize;
 // s.c
 
 struct s {
-	u8 *top, *p;
-	usize n;
+	u8 *p;
+	usize n, total;
 };
-#define sstr(str)                                                              \
-	((struct s){ .top = (u8 *)(str), .p = (u8 *)(str), .n = strlen(str) })
+#define sstr(str) (create_s_full((u8 *)(str), sizeof(str) - 1))
 
 struct s create_s(u8 *p, usize n);
+struct s create_s_full(u8 *p, usize n);
 
 void *_alloc(struct s *s, usize size, usize align);
 #define alloc(s, t, n) (_alloc((s), sizeof(t) * (n), alignof(t)))
 struct s alloc_s(struct s *s, usize size);
 void alloc_copy(struct s *s, void *data, usize size, usize align);
-usize s_used(struct s *s);
 
 // early_death.c
 

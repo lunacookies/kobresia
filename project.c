@@ -58,11 +58,11 @@ discover_project(struct mem *m)
 			}
 			file_count++;
 
-			name_starts[entity_count] = (u32)s_used(&names);
+			name_starts[entity_count] = (u32)names.n;
 			alloc_copy(&names, file_entry->d_name,
 			        file_entry->d_namlen, 1);
 
-			path_starts[entity_count] = (u32)s_used(&paths);
+			path_starts[entity_count] = (u32)paths.n;
 
 			alloc_copy(&paths, pkg_entry->d_name,
 			        pkg_entry->d_namlen, 1);
@@ -83,10 +83,10 @@ discover_project(struct mem *m)
 			continue;
 		}
 
-		name_starts[entity_count] = (u32)s_used(&names);
+		name_starts[entity_count] = (u32)names.n;
 		alloc_copy(&names, pkg_entry->d_name, pkg_entry->d_namlen, 1);
 
-		path_starts[entity_count] = (u32)s_used(&paths);
+		path_starts[entity_count] = (u32)paths.n;
 		alloc_copy(&paths, pkg_entry->d_name, pkg_entry->d_namlen, 1);
 
 		u8 null = 0;
@@ -103,12 +103,12 @@ discover_project(struct mem *m)
 		assert(pkg_count <= MAX_PKGS);
 	}
 
-	name_starts[entity_count] = (u32)s_used(&names);
-	path_starts[entity_count] = (u32)s_used(&paths);
+	name_starts[entity_count] = (u32)names.n;
+	path_starts[entity_count] = (u32)paths.n;
 
 	return (struct project){
-		.names = (char *)names.top,
-		.paths = (char *)paths.top,
+		.names = (char *)names.p,
+		.paths = (char *)paths.p,
 		.name_starts = name_starts,
 		.path_starts = path_starts,
 		.entity_count = entity_count,
@@ -127,7 +127,7 @@ project_entity_name(struct project *p, u32 id)
 	u32 start = p->name_starts[id];
 	u32 end = p->name_starts[id + 1];
 	u32 length = end - start;
-	return create_s((u8 *)&p->names[start], length);
+	return create_s_full((u8 *)&p->names[start], length);
 }
 
 struct s
@@ -137,5 +137,5 @@ project_entity_path(struct project *p, u32 id)
 	u32 start = p->path_starts[id];
 	u32 end = p->path_starts[id + 1] - 1; // remove null terminator
 	u32 length = end - start;
-	return create_s((u8 *)&p->paths[start], length);
+	return create_s_full((u8 *)&p->paths[start], length);
 }

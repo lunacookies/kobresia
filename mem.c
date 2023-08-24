@@ -52,7 +52,7 @@ alloc_proc_mem(u32 core_count)
 		};
 	}
 
-	assert(block.n == 0);
+	assert(block.n == block.total);
 
 	return (struct proc_mem){ .main = main, .workers = workers };
 }

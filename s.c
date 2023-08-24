@@ -3,29 +3,37 @@
 struct s
 create_s(u8 *p, usize n)
 {
-	return (struct s){ .top = p, .p = p, .n = n };
+	return (struct s){
+		.p = p,
+		.n = 0,
+		.total = n,
+	};
+}
+
+struct s
+create_s_full(u8 *p, usize n)
+{
+	return (struct s){
+		.p = p,
+		.n = n,
+		.total = n,
+	};
 }
 
 void *
 _alloc(struct s *s, usize size, usize align)
 {
-	usize padding = align - ((usize)s->p % align);
+	usize padding = align - ((usize)(s->p + s->n) % align);
 	if (padding == align) {
 		padding = 0;
 	}
 
-	assert(s->n >= size + padding);
+	assert(s->total - s->n >= size + padding);
 
-	s->p += padding;
-	s->n -= padding;
-
-	void *p = s->p;
-
-	s->p += size;
-	s->n -= size;
-
+	s->n += padding;
+	void *p = s->p + s->n;
+	s->n += size;
 	memset(p, '*', size);
-
 	return p;
 }
 
@@ -42,10 +50,4 @@ alloc_copy(struct s *s, void *data, usize size, usize align)
 {
 	u8 *p = _alloc(s, size, align);
 	memcpy(p, data, size);
-}
-
-usize
-s_used(struct s *s)
-{
-	return (usize)(s->p - s->top);
 }
