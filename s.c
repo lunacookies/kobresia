@@ -38,9 +38,9 @@ _alloc(struct s *s, usize size, usize align)
 }
 
 struct s
-alloc_s(struct s *s, usize size)
+alloc_s(struct s *s, usize size, usize align)
 {
-	void *p = _alloc(s, size, 1);
+	void *p = _alloc(s, size, align);
 	struct s new = create_s(p, size);
 	return new;
 }

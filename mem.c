@@ -35,20 +35,22 @@ os_alloc(usize nbytes)
 struct proc_mem
 alloc_proc_mem(u32 core_count)
 {
+	usize ps = page_size();
+
 	usize total = (core_count + 1) * (PERM_MEM_SIZE + TEMP_MEM_SIZE);
 	struct s block = os_alloc(total);
 
 	struct mem main = {
-		.perm = alloc_s(&block, PERM_MEM_SIZE),
-		.temp = alloc_s(&block, TEMP_MEM_SIZE),
+		.perm = alloc_s(&block, PERM_MEM_SIZE, ps),
+		.temp = alloc_s(&block, TEMP_MEM_SIZE, ps),
 	};
 
 	struct mem *workers = alloc(&main.perm, struct mem, core_count);
 
 	for (u32 i = 0; i < core_count; i++) {
 		workers[i] = (struct mem){
-			.perm = alloc_s(&block, PERM_MEM_SIZE),
-			.temp = alloc_s(&block, TEMP_MEM_SIZE),
+			.perm = alloc_s(&block, PERM_MEM_SIZE, ps),
+			.temp = alloc_s(&block, TEMP_MEM_SIZE, ps),
 		};
 	}
 

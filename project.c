@@ -13,8 +13,8 @@ enum {
 struct project
 discover_project(struct mem *m)
 {
-	struct s names = alloc_s(&m->temp, sizeof(char) * MAX_NAMES_BYTES);
-	struct s paths = alloc_s(&m->temp, sizeof(char) * MAX_PATHS_BYTES);
+	struct s names = alloc_s(&m->temp, MAX_NAMES_BYTES, 1);
+	struct s paths = alloc_s(&m->temp, MAX_PATHS_BYTES, 1);
 
 	u32 *name_starts = alloc(&m->temp, u32, MAX_ENTITIES);
 	u32 *path_starts = alloc(&m->temp, u32, MAX_ENTITIES);

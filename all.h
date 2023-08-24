@@ -39,7 +39,7 @@ struct s create_s_full(u8 *p, usize n);
 
 void *_alloc(struct s *s, usize size, usize align);
 #define alloc(s, t, n) (_alloc((s), sizeof(t) * (n), alignof(t)))
-struct s alloc_s(struct s *s, usize size);
+struct s alloc_s(struct s *s, usize size, usize align);
 void alloc_copy(struct s *s, void *data, usize size, usize align);
 
 // early_death.c
