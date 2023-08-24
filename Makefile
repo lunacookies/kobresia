@@ -1,11 +1,8 @@
-CC=clang
+CC := clang
 
-CFLAGS=\
+CFLAGS := \
 	-std=c11 \
 	-fshort-enums \
-	-fsanitize=address,undefined \
-	-fwrapv \
-	-g3 \
 	-W \
 	-Wall \
 	-Wextra \
@@ -17,26 +14,51 @@ CFLAGS=\
 	-Wstrict-prototypes \
 	-Wno-unused-parameter
 
-NAME=kobresia
-BUILD_DIR=out
-HEADERS=$(wildcard *.h)
-SOURCES=$(wildcard *.c)
-OBJECTS=$(addprefix $(BUILD_DIR)/, $(SOURCES:.c=.o))
+NAME := kobresia
+HEADERS := $(wildcard *.h)
+SOURCES := $(wildcard *.c)
 
-all: $(BUILD_DIR)/$(NAME) tidy
+BUILD_DIR := out
+BUILD_DIR_DEVELOP := $(BUILD_DIR)/develop
+BUILD_DIR_RELEASE := $(BUILD_DIR)/release
 
-$(BUILD_DIR)/$(NAME): $(OBJECTS)
-	@ mkdir -p $(BUILD_DIR)
-	@ $(CC) $(CFLAGS) $^ -o $@
+DEVELOP_OBJECTS += $(addprefix $(BUILD_DIR_DEVELOP)/, $(SOURCES:.c=.o))
+RELEASE_OBJECTS += $(addprefix $(BUILD_DIR_RELEASE)/, $(SOURCES:.c=.o))
 
-$(BUILD_DIR)/%.o: %.c $(HEADERS)
-	@ mkdir -p $(BUILD_DIR)
+all: develop tidy
+
+develop: CFLAGS += -fsanitize=address,undefined -g3 -DDEVELOP
+develop: $(BUILD_DIR_DEVELOP)/$(NAME)
+
+release: CFLAGS += -O1 -flto -fwrapv
+release: $(BUILD_DIR_RELEASE)/$(NAME)
+
+$(BUILD_DIR_DEVELOP)/$(NAME): $(DEVELOP_OBJECTS) | $(BUILD_DIR_DEVELOP)
+	@ printf "LD $@\n"
+	@ $(CC) $(CFLAGS) -o $@ $^
+
+$(BUILD_DIR_RELEASE)/$(NAME): $(RELEASE_OBJECTS) | $(BUILD_DIR_RELEASE)
+	@ printf "LD $@\n"
+	@ $(CC) $(CFLAGS) -o $@ $^
+
+$(BUILD_DIR_DEVELOP)/%.o: %.c $(HEADERS) | $(BUILD_DIR_DEVELOP)
+	@ printf "CC $@\n"
 	@ $(CC) $(CFLAGS) -c -o $@ $<
+
+$(BUILD_DIR_RELEASE)/%.o: %.c $(HEADERS) | $(BUILD_DIR_RELEASE)
+	@ printf "CC $@\n"
+	@ $(CC) $(CFLAGS) -c -o $@ $<
+
+$(BUILD_DIR_DEVELOP):
+	@ mkdir -p $@
+
+$(BUILD_DIR_RELEASE):
+	@ mkdir -p $@
 
 tidy: $(HEADERS) $(SOURCES)
 	@ clang-format -i $^
 
 clean:
-	@ rm -r $(BUILD_DIR)
+	@ rm -rf $(BUILD_DIR)
 
 .PHONY: all tidy clean
