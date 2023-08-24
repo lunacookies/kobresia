@@ -21,26 +21,30 @@ main(void)
 
 	struct project proj = discover_project(&pm.main);
 
-	for (u32 i = 0; i < proj.pkg_count; i++) {
-		u32 pkg_id = proj.pkg_ids[i];
+	printf("found %d packages\nfound %d files\n", proj.pkg_count,
+	        proj.file_count);
 
-		struct s name = project_entity_name(&proj, pkg_id);
-		struct s path = project_entity_path(&proj, pkg_id);
+	for (u32 pkg_id = 0; pkg_id < proj.pkg_count; pkg_id++) {
+		struct s name = project_pkg_name(&proj, pkg_id);
+		struct s path = project_pkg_path(&proj, pkg_id);
 
-		printf("\nname: (%zu) %.*s\n", name.n, (int)name.n, name.p);
+		printf("\n");
+		printf("id:   %d\n", pkg_id);
+		printf("name: (%zu) %.*s\n", name.n, (int)name.n, name.p);
 		printf("path: (%zu) %.*s\n", path.n, (int)path.n, path.p);
 
-		u32 file_count = proj.pkg_file_counts[i];
-		u32 first_file = proj.pkg_first_files[i];
+		u32 file_count = proj.pkg_file_counts[pkg_id];
+		u32 first_file = proj.pkg_first_files[pkg_id];
 		u32 end = first_file + file_count;
 
 		for (u32 file_id = first_file; file_id < end; file_id++) {
-			struct s file_name =
-			        project_entity_name(&proj, file_id);
-			struct s file_path =
-			        project_entity_path(&proj, file_id);
+			struct s file_name = project_file_name(&proj, file_id);
+			struct s file_path = project_file_path(&proj, file_id);
 
-			printf("\n\tname: (%zu) %.*s\n", file_name.n,
+			printf("\n");
+			printf("\tid:   %d\n", file_id);
+			printf("\tpkg:  %d\n", proj.file_pkgs[file_id]);
+			printf("\tname: (%zu) %.*s\n", file_name.n,
 			        (int)file_name.n, file_name.p);
 			printf("\tpath: (%zu) %.*s\n", file_path.n,
 			        (int)file_path.n, file_path.p);

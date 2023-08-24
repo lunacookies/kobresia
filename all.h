@@ -117,19 +117,26 @@ struct diagnostics_store create_diagnostics_store(struct mem *m);
 // project.c
 
 struct project {
-	char *names;
-	char *paths;
-	u32 *name_starts;
-	u32 *path_starts;
-	u32 entity_count;
+	u32 file_count;
+	u32 pkg_count;
 
+	char *file_names;
+	char *file_paths;
+	u32 *file_name_starts;
+	u32 *file_path_starts;
+	u32 *file_pkgs;
+
+	char *pkg_names;
+	char *pkg_paths;
+	u32 *pkg_name_starts;
+	u32 *pkg_path_starts;
 	u32 *pkg_first_files;
 	u32 *pkg_file_counts;
-	u32 *pkg_ids;
-	u32 pkg_count;
 };
 
 struct project discover_project(struct mem *m);
 
-struct s project_entity_name(struct project *p, u32 id);
-struct s project_entity_path(struct project *p, u32 id);
+struct s project_file_name(struct project *p, u32 id);
+struct s project_file_path(struct project *p, u32 id);
+struct s project_pkg_name(struct project *p, u32 id);
+struct s project_pkg_path(struct project *p, u32 id);
