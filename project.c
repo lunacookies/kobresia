@@ -73,6 +73,9 @@ discover_project(struct mem *m)
 			alloc_copy(&paths, file_entry->d_name,
 			        file_entry->d_namlen, 1);
 
+			u8 null = 0;
+			alloc_copy(&paths, &null, 1, 1);
+
 			entity_count++;
 		}
 
@@ -85,6 +88,9 @@ discover_project(struct mem *m)
 
 		path_starts[entity_count] = (u32)s_used(&paths);
 		alloc_copy(&paths, pkg_entry->d_name, pkg_entry->d_namlen, 1);
+
+		u8 null = 0;
+		alloc_copy(&paths, &null, 1, 1);
 
 		pkg_first_files[pkg_count] = first_file;
 		pkg_file_counts[pkg_count] = file_count;
@@ -129,7 +135,7 @@ project_entity_path(struct project *p, u32 id)
 {
 	assert(id < p->entity_count);
 	u32 start = p->path_starts[id];
-	u32 end = p->path_starts[id + 1];
+	u32 end = p->path_starts[id + 1] - 1; // remove null terminator
 	u32 length = end - start;
 	return create_s((u8 *)&p->paths[start], length);
 }
