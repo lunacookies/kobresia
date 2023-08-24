@@ -35,7 +35,11 @@ _alloc(struct s *s, usize size, usize align)
 	s->n += padding;
 	void *p = s->p + s->n;
 	s->n += size;
+
+#if DEVELOP
 	memset(p, '*', size);
+#endif
+
 	return p;
 }
 
