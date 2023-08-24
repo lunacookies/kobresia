@@ -106,9 +106,21 @@ discover_project(struct mem *m)
 	name_starts[entity_count] = (u32)names.n;
 	path_starts[entity_count] = (u32)paths.n;
 
+	char *names_p = alloc_copy_s(&m->perm, names, 1);
+	char *paths_p = alloc_copy_s(&m->perm, paths, 1);
+
+	// the “starts” arrays also include an end
+	name_starts = alloc_copy(&m->perm, u32, name_starts, entity_count + 1);
+	path_starts = alloc_copy(&m->perm, u32, path_starts, entity_count + 1);
+
+	pkg_first_files = alloc_copy(&m->perm, u32, pkg_first_files, pkg_count);
+	pkg_file_counts = alloc_copy(&m->perm, u32, pkg_file_counts, pkg_count);
+
+	pkg_ids = alloc_copy(&m->perm, u32, pkg_ids, pkg_count);
+
 	return (struct project){
-		.names = (char *)names.p,
-		.paths = (char *)paths.p,
+		.names = names_p,
+		.paths = paths_p,
 		.name_starts = name_starts,
 		.path_starts = path_starts,
 		.entity_count = entity_count,

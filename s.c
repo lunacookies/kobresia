@@ -52,3 +52,11 @@ _alloc_copy(struct s *s, void *data, usize size, usize align)
 	memcpy(p, data, size);
 	return p;
 }
+
+void *
+alloc_copy_s(struct s *s, struct s from, usize align)
+{
+	u8 *p = _alloc(s, from.n, align);
+	memcpy(p, from.p, from.n);
+	return p;
+}

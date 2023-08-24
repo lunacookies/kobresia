@@ -43,6 +43,7 @@ struct s alloc_s(struct s *s, usize size, usize align);
 void *_alloc_copy(struct s *s, void *data, usize size, usize align);
 #define alloc_copy(s, t, v, n)                                                 \
 	((t *)_alloc_copy((s), (v), sizeof(t) * (n), alignof(t)))
+void *alloc_copy_s(struct s *s, struct s from, usize align);
 
 // early_death.c
 
