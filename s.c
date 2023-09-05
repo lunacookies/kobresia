@@ -84,3 +84,16 @@ s_temp_end(struct s_temp t)
 	t.s->temp_count--;
 	t.s->n = t.n;
 }
+
+void
+s_printf(struct s *s, char *fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	usize remaining = s->total - s->n;
+	usize written =
+	        (usize)vsnprintf((char *)s->p + s->n, remaining, fmt, args);
+	assert(written < remaining);
+	s->n += written;
+	va_end(args);
+}

@@ -16,6 +16,12 @@ main(void)
 {
 	u32 c = core_count();
 	struct proc_mem pm = alloc_proc_mem(c);
+
+#if DEVELOP
+	run_tests(&pm.main);
+	return 0;
+#endif
+
 	struct diagnostics_store diagnostics_store =
 	        create_diagnostics_store(&pm.main);
 

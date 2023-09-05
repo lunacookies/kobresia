@@ -1,7 +1,9 @@
 #include <assert.h>
 #include <dirent.h>
+#include <fcntl.h>
 #include <pthread.h>
 #include <stdalign.h>
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -9,6 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
+#include <sys/stat.h>
 #include <sys/sysctl.h>
 #include <unistd.h>
 
@@ -44,6 +47,7 @@ void *_alloc_copy(struct s *s, void *data, usize size, usize align);
 #define alloc_copy(s, t, v, n)                                                 \
 	((t *)_alloc_copy((s), (v), sizeof(t) * (n), alignof(t)))
 void *alloc_copy_s(struct s *s, struct s from, usize align);
+void s_printf(struct s *s, char *fmt, ...);
 
 struct s_temp {
 	struct s *s;
@@ -140,3 +144,33 @@ struct s project_file_name(struct project *p, u32 id);
 struct s project_file_path(struct project *p, u32 id);
 struct s project_pkg_name(struct project *p, u32 id);
 struct s project_pkg_path(struct project *p, u32 id);
+
+// lexer.c
+
+enum token_kind {
+	T_IDENT,
+	T_NUMBER,
+};
+
+struct span {
+	u32 start, end;
+};
+
+struct tokens {
+	enum token_kind *kinds;
+	struct span *spans;
+	usize count;
+};
+
+struct s token_kind_name(enum token_kind k);
+struct tokens lex(struct mem *m, struct s input);
+
+#if DEVELOP
+struct s lex_test(struct mem *m, struct s input);
+#endif
+
+// test.c
+
+#if DEVELOP
+void run_tests(struct mem *m);
+#endif

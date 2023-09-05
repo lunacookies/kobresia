@@ -1,0 +1,8 @@
+1
+1234
+123abc
+===
+NUMBER@0..1
+NUMBER@2..6
+NUMBER@7..10
+IDENT@10..13
