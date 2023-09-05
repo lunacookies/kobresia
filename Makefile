@@ -27,6 +27,9 @@ RELEASE_OBJECTS += $(addprefix $(BUILD_DIR_RELEASE)/, $(SOURCES:.c=.o))
 
 all: develop tidy
 
+test: develop
+	@ $(BUILD_DIR_DEVELOP)/$(NAME) --test
+
 develop: CFLAGS += -fsanitize=address,undefined -g3 -DDEVELOP
 develop: $(BUILD_DIR_DEVELOP)/$(NAME)
 
@@ -61,4 +64,4 @@ tidy: $(HEADERS) $(SOURCES)
 clean:
 	@ rm -rf $(BUILD_DIR)
 
-.PHONY: all tidy clean
+.PHONY: all develop release test tidy clean

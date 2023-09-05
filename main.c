@@ -12,15 +12,15 @@ work(u32 i, void *arg)
 }
 
 int
-main(void)
+main(int argc, char **argv)
 {
 	u32 c = core_count();
 	struct proc_mem pm = alloc_proc_mem(c);
 
-#if DEVELOP
-	run_tests(&pm.main);
-	return 0;
-#endif
+	if (argc == 2 && strcmp(argv[1], "--test") == 0) {
+		run_tests(&pm.main);
+		return 0;
+	}
 
 	struct diagnostics_store diagnostics_store =
 	        create_diagnostics_store(&pm.main);
