@@ -4,6 +4,8 @@ struct s
 token_kind_name(enum token_kind k)
 {
 	switch (k) {
+	case T_INVALID:
+		return sstr("INVALID");
 	case T_IDENT:
 		return sstr("IDENT");
 	case T_NUMBER:
@@ -78,6 +80,12 @@ lex(struct mem *m, struct s input)
 			count++;
 			continue;
 		}
+
+		kinds[count] = T_INVALID;
+		spans[count] = (struct span){ .start = i, .end = i + 1 };
+		i++;
+		count++;
+		continue;
 	}
 
 	kinds = alloc_copy(&m->perm, enum token_kind, kinds, count);

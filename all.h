@@ -148,6 +148,7 @@ struct s project_pkg_path(struct project *p, u32 id);
 // lexer.c
 
 enum token_kind {
+	T_INVALID,
 	T_IDENT,
 	T_NUMBER,
 };
