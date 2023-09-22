@@ -20,7 +20,7 @@ run_component_tests(struct mem *m, struct s path, test_fn f)
 			continue;
 		}
 
-		struct s_temp t = s_temp_begin(&m->temp);
+		struct arena_temp t = arena_temp_begin(&m->temp);
 
 		// Copy together a path to this file.
 
@@ -56,12 +56,11 @@ run_component_tests(struct mem *m, struct s path, test_fn f)
 		}
 
 		usize divider_pos = (usize)((u8 *)divider_p - content);
-		struct s input = create_s_full(content, divider_pos);
+		struct s input = create_s(content, divider_pos);
 
 		u8 *expect_start = content + divider_pos + DIVIDER.n;
 		usize expect_length = size - divider_pos - DIVIDER.n;
-		struct s expect_output =
-		        create_s_full(expect_start, expect_length);
+		struct s expect_output = create_s(expect_start, expect_length);
 
 		struct s actual_output = f(m, input);
 
@@ -78,7 +77,7 @@ run_component_tests(struct mem *m, struct s path, test_fn f)
 		printf("actual (%zu):\n%.*s\n", actual_output.n,
 		        (int)actual_output.n, actual_output.p);
 
-		s_temp_end(t);
+		arena_temp_end(t);
 	}
 }
 

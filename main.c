@@ -15,7 +15,8 @@ int
 main(int argc, char **argv)
 {
 	u32 c = core_count();
-	struct proc_mem pm = alloc_proc_mem(c);
+	struct proc_mem pm = { 0 };
+	alloc_proc_mem(&pm, c);
 
 #if DEVELOP
 	if (argc == 2 && strcmp(argv[1], "--test") == 0) {
@@ -24,10 +25,11 @@ main(int argc, char **argv)
 	}
 #endif
 
-	struct diagnostics_store diagnostics_store =
-	        create_diagnostics_store(&pm.main);
+	struct diagnostics_store diagnostics_store = { 0 };
+	init_diagnostics_store(&diagnostics_store, &pm.main);
 
-	struct project proj = discover_project(&pm.main);
+	struct project proj = { 0 };
+	discover_project(&proj, &pm.main);
 
 	printf("found %d packages\nfound %d files\n", proj.pkg_count,
 	        proj.file_count);

@@ -33,29 +33,38 @@ typedef size_t usize;
 
 struct s {
 	u8 *p;
-	usize n, total, temp_count;
-};
-#define sstr(str) (create_s_full((u8 *)(str), sizeof(str) - 1))
-
-struct s create_s(u8 *p, usize n);
-struct s create_s_full(u8 *p, usize n);
-
-void *_alloc(struct s *s, usize size, usize align);
-#define alloc(s, t, n) ((t *)_alloc((s), sizeof(t) * (n), alignof(t)))
-struct s alloc_s(struct s *s, usize size, usize align);
-void *_alloc_copy(struct s *s, void *data, usize size, usize align);
-#define alloc_copy(s, t, v, n)                                                 \
-	((t *)_alloc_copy((s), (v), sizeof(t) * (n), alignof(t)))
-void *alloc_copy_s(struct s *s, struct s from, usize align);
-void s_printf(struct s *s, char *fmt, ...);
-
-struct s_temp {
-	struct s *s;
 	usize n;
 };
+struct s create_s(void *p, usize n);
+#define sstr(str) (create_s((str), sizeof(str) - 1))
 
-struct s_temp s_temp_begin(struct s *s);
-void s_temp_end(struct s_temp t);
+// arena.c
+
+struct arena {
+	struct s buf;
+	usize used, temp_count;
+};
+
+void init_arena(struct arena *a, struct s buf);
+
+void *_alloc(struct arena *a, usize size, usize align);
+#define alloc(a, t, n) ((t *)_alloc((a), sizeof(t) * (n), alignof(t)))
+struct s alloc_s(struct arena *a, usize size, usize align);
+void alloc_arena(struct arena *a, struct arena *out, usize size, usize align);
+void *_alloc_copy(struct arena *a, void *data, usize size, usize align);
+#define alloc_copy(a, t, v, n)                                                 \
+	((t *)_alloc_copy((a), (v), sizeof(t) * (n), alignof(t)))
+void *alloc_copy_s(struct arena *a, struct s from, usize align);
+void *alloc_copy_arena(struct arena *a, struct arena *from, usize align);
+void arena_printf(struct arena *a, char *fmt, ...);
+
+struct arena_temp {
+	struct arena *a;
+	usize used;
+};
+
+struct arena_temp arena_temp_begin(struct arena *a);
+void arena_temp_end(struct arena_temp t);
 
 // early_death.c
 
@@ -64,8 +73,8 @@ void early_death(struct s msg);
 // mem.c
 
 struct mem {
-	struct s perm;
-	struct s temp;
+	struct arena perm;
+	struct arena temp;
 };
 
 struct proc_mem {
@@ -74,7 +83,7 @@ struct proc_mem {
 };
 
 struct s os_alloc(usize nbytes);
-struct proc_mem alloc_proc_mem(u32 core_count);
+void alloc_proc_mem(struct proc_mem *pm, u32 core_count);
 
 // thread.c
 
@@ -87,7 +96,7 @@ struct barrier {
 	u32 threads;
 };
 
-struct barrier barrier_create(u32 n);
+void barrier_create(struct barrier *b, u32 n);
 void barrier_wait(struct barrier *b);
 
 typedef void (*job)(u32, void *);
@@ -116,7 +125,7 @@ struct diagnostics_store {
 	usize count;
 };
 
-struct diagnostics_store create_diagnostics_store(struct mem *m);
+void init_diagnostics_store(struct diagnostics_store *d, struct mem *m);
 
 // project.c
 
@@ -138,7 +147,7 @@ struct project {
 	u32 *pkg_file_counts;
 };
 
-struct project discover_project(struct mem *m);
+void discover_project(struct project *p, struct mem *m);
 
 struct s project_file_name(struct project *p, u32 id);
 struct s project_file_path(struct project *p, u32 id);
@@ -164,7 +173,7 @@ struct tokens {
 };
 
 struct s token_kind_name(enum token_kind k);
-struct tokens lex(struct mem *m, struct s input);
+void lex(struct tokens *t, struct mem *m, struct s input);
 
 #if DEVELOP
 struct s lex_test(struct mem *m, struct s input);

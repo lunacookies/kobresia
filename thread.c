@@ -12,27 +12,21 @@ core_count(void)
 	return value;
 }
 
-struct barrier
-barrier_create(u32 n)
+void
+barrier_create(struct barrier *b, u32 n)
 {
 	pthread_condattr_t condattr;
 	pthread_condattr_init(&condattr);
-	pthread_cond_t cond;
-	pthread_cond_init(&cond, &condattr);
+	pthread_cond_init(&b->cond, &condattr);
 	pthread_condattr_destroy(&condattr);
 
 	pthread_mutexattr_t mutexattr;
 	pthread_mutexattr_init(&mutexattr);
-	pthread_mutex_t mutex;
-	pthread_mutex_init(&mutex, &mutexattr);
+	pthread_mutex_init(&b->mutex, &mutexattr);
 	pthread_mutexattr_destroy(&mutexattr);
 
-	return (struct barrier){
-		.cond = cond,
-		.mutex = mutex,
-		.n = 0,
-		.threads = n,
-	};
+	b->n = 0;
+	b->threads = n;
 }
 
 void
@@ -90,16 +84,15 @@ struct pool *
 start_pool(struct mem *m, u32 core_count, qos_class_t qos)
 {
 	struct pool *p = alloc(&m->perm, struct pool, 1);
-	*p = (struct pool){
-		.jobs = alloc(&m->perm, job, core_count),
-		.args = alloc(&m->perm, void *, core_count),
 
-		// + 1 for main thread
-		.ready = barrier_create(core_count + 1),
-		.done = barrier_create(core_count + 1),
+	p->jobs = alloc(&m->perm, job, core_count);
+	p->args = alloc(&m->perm, void *, core_count);
 
-		.count = core_count,
-	};
+	// + 1 for main thread
+	barrier_create(&p->ready, core_count + 1);
+	barrier_create(&p->done, core_count + 1);
+
+	p->count = core_count;
 
 	for (u32 i = 0; i < core_count; i++) {
 		p->jobs[i] = NULL;

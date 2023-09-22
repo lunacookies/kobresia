@@ -37,10 +37,10 @@ ident_follow(char c)
 	return ident_start(c) || number(c) || (c == '_');
 }
 
-struct tokens
-lex(struct mem *m, struct s input)
+void
+lex(struct tokens *t, struct mem *m, struct s input)
 {
-	struct s_temp t = s_temp_begin(&m->temp);
+	struct arena_temp temp = arena_temp_begin(&m->temp);
 
 	// the maximum number of tokens is one per byte of input
 	enum token_kind *kinds = alloc(&m->temp, enum token_kind, input.n);
@@ -88,34 +88,33 @@ lex(struct mem *m, struct s input)
 		continue;
 	}
 
-	kinds = alloc_copy(&m->perm, enum token_kind, kinds, count);
-	spans = alloc_copy(&m->perm, struct span, spans, count);
+	t->kinds = alloc_copy(&m->perm, enum token_kind, kinds, count);
+	t->spans = alloc_copy(&m->perm, struct span, spans, count);
+	t->count = count;
 
-	s_temp_end(t);
-
-	return (struct tokens){
-		.kinds = kinds,
-		.spans = spans,
-		.count = count,
-	};
+	arena_temp_end(temp);
 }
 
 struct s
 lex_test(struct mem *m, struct s input)
 {
-	struct tokens toks = lex(m, input);
-	struct s_temp t = s_temp_begin(&m->temp);
-	struct s output = alloc_s(&m->temp, 1024 * 1024, 1);
+	struct tokens toks = { 0 };
+	lex(&toks, m, input);
+
+	struct arena_temp t = arena_temp_begin(&m->temp);
+
+	struct arena output = { 0 };
+	alloc_arena(&m->temp, &output, 1024 * 1024, 1);
 
 	for (usize i = 0; i < toks.count; i++) {
 		enum token_kind kind = toks.kinds[i];
 		struct span span = toks.spans[i];
 		struct s name = token_kind_name(kind);
-		s_printf(&output, "%.*s@%d..%d\n", (int)name.n, name.p,
+		arena_printf(&output, "%.*s@%d..%d\n", (int)name.n, name.p,
 		        span.start, span.end);
 	}
 
-	void *p = alloc_copy_s(&m->perm, output, 1);
-	s_temp_end(t);
-	return create_s_full(p, output.n);
+	void *p = alloc_copy_arena(&m->perm, &output, 1);
+	arena_temp_end(t);
+	return create_s(p, output.used);
 }
