@@ -1,7 +1,7 @@
 #include "all.h"
 
 void
-early_death(struct s msg)
+early_death(struct str msg)
 {
 	// we can’t even allocate memory,
 	// so we do what little we can

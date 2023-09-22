@@ -1,15 +1,15 @@
 #include "all.h"
 
-struct s
+struct str
 token_kind_name(enum token_kind k)
 {
 	switch (k) {
 	case T_INVALID:
-		return sstr("INVALID");
+		return S("INVALID");
 	case T_IDENT:
-		return sstr("IDENT");
+		return S("IDENT");
 	case T_NUMBER:
-		return sstr("NUMBER");
+		return S("NUMBER");
 	}
 }
 
@@ -38,7 +38,7 @@ ident_follow(char c)
 }
 
 void
-lex(struct tokens *t, struct mem *m, struct s input)
+lex(struct tokens *t, struct mem *m, struct str input)
 {
 	struct arena_temp temp = arena_temp_begin(&m->temp);
 
@@ -95,8 +95,8 @@ lex(struct tokens *t, struct mem *m, struct s input)
 	arena_temp_end(temp);
 }
 
-struct s
-lex_test(struct mem *m, struct s input)
+struct str
+lex_test(struct mem *m, struct str input)
 {
 	struct tokens toks = { 0 };
 	lex(&toks, m, input);
@@ -109,12 +109,12 @@ lex_test(struct mem *m, struct s input)
 	for (usize i = 0; i < toks.count; i++) {
 		enum token_kind kind = toks.kinds[i];
 		struct span span = toks.spans[i];
-		struct s name = token_kind_name(kind);
+		struct str name = token_kind_name(kind);
 		arena_printf(&output, "%.*s@%d..%d\n", (int)name.n, name.p,
 		        span.start, span.end);
 	}
 
 	void *p = alloc_copy_arena(&m->perm, &output, 1);
 	arena_temp_end(t);
-	return create_s(p, output.used);
+	return str_make(p, output.used);
 }

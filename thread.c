@@ -13,7 +13,7 @@ core_count(void)
 }
 
 void
-barrier_create(struct barrier *b, u32 n)
+barrier_init(struct barrier *b, u32 n)
 {
 	pthread_condattr_t condattr;
 	pthread_condattr_init(&condattr);
@@ -81,7 +81,7 @@ worker(void *a)
 }
 
 struct pool *
-start_pool(struct mem *m, u32 core_count, qos_class_t qos)
+pool_start(struct mem *m, u32 core_count, qos_class_t qos)
 {
 	struct pool *p = alloc(&m->perm, struct pool, 1);
 
@@ -89,8 +89,8 @@ start_pool(struct mem *m, u32 core_count, qos_class_t qos)
 	p->args = alloc(&m->perm, void *, core_count);
 
 	// + 1 for main thread
-	barrier_create(&p->ready, core_count + 1);
-	barrier_create(&p->done, core_count + 1);
+	barrier_init(&p->ready, core_count + 1);
+	barrier_init(&p->done, core_count + 1);
 
 	p->count = core_count;
 
@@ -116,7 +116,7 @@ start_pool(struct mem *m, u32 core_count, qos_class_t qos)
 }
 
 void
-execute(struct pool *p, job j, void **args)
+pool_sched(struct pool *p, job j, void **args)
 {
 	for (u32 i = 0; i < p->count; i++) {
 		void *arg = args[i];

@@ -1,7 +1,7 @@
 #include "all.h"
 
 void
-init_arena(struct arena *a, struct s buf)
+arena_init(struct arena *a, struct str buf)
 {
 	a->buf = buf;
 	a->used = 0;
@@ -29,19 +29,19 @@ _alloc(struct arena *a, usize size, usize align)
 	return p;
 }
 
-struct s
-alloc_s(struct arena *a, usize size, usize align)
+struct str
+alloc_str(struct arena *a, usize size, usize align)
 {
 	void *p = _alloc(a, size, align);
-	struct s new = create_s(p, size);
+	struct str new = str_make(p, size);
 	return new;
 }
 
 void
 alloc_arena(struct arena *a, struct arena *out, usize size, usize align)
 {
-	struct s buf = alloc_s(a, size, align);
-	init_arena(out, buf);
+	struct str buf = alloc_str(a, size, align);
+	arena_init(out, buf);
 }
 
 void *
@@ -53,7 +53,7 @@ _alloc_copy(struct arena *a, void *data, usize size, usize align)
 }
 
 void *
-alloc_copy_s(struct arena *a, struct s from, usize align)
+alloc_copy_str(struct arena *a, struct str from, usize align)
 {
 	u8 *p = _alloc(a, from.n, align);
 	memcpy(p, from.p, from.n);
@@ -63,8 +63,8 @@ alloc_copy_s(struct arena *a, struct s from, usize align)
 void *
 alloc_copy_arena(struct arena *a, struct arena *from, usize align)
 {
-	struct s used = create_s(from->buf.p, from->used);
-	return alloc_copy_s(a, used, align);
+	struct str used = str_make(from->buf.p, from->used);
+	return alloc_copy_str(a, used, align);
 }
 
 struct arena_temp

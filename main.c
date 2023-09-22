@@ -16,7 +16,7 @@ main(int argc, char **argv)
 {
 	u32 c = core_count();
 	struct proc_mem pm = { 0 };
-	alloc_proc_mem(&pm, c);
+	proc_mem_alloc(&pm, c);
 
 #if DEVELOP
 	if (argc == 2 && strcmp(argv[1], "--test") == 0) {
@@ -26,17 +26,17 @@ main(int argc, char **argv)
 #endif
 
 	struct diagnostics_store diagnostics_store = { 0 };
-	init_diagnostics_store(&diagnostics_store, &pm.main);
+	diagnostics_store_init(&diagnostics_store, &pm.main);
 
 	struct project proj = { 0 };
-	discover_project(&proj, &pm.main);
+	project_search(&proj, &pm.main);
 
 	printf("found %d packages\nfound %d files\n", proj.pkg_count,
 	        proj.file_count);
 
 	for (u32 pkg_id = 0; pkg_id < proj.pkg_count; pkg_id++) {
-		struct s name = project_pkg_name(&proj, pkg_id);
-		struct s path = project_pkg_path(&proj, pkg_id);
+		struct str name = project_pkg_name(&proj, pkg_id);
+		struct str path = project_pkg_path(&proj, pkg_id);
 
 		printf("\n");
 		printf("id:   %d\n", pkg_id);
@@ -48,8 +48,10 @@ main(int argc, char **argv)
 		u32 end = first_file + file_count;
 
 		for (u32 file_id = first_file; file_id < end; file_id++) {
-			struct s file_name = project_file_name(&proj, file_id);
-			struct s file_path = project_file_path(&proj, file_id);
+			struct str file_name =
+			        project_file_name(&proj, file_id);
+			struct str file_path =
+			        project_file_path(&proj, file_id);
 
 			printf("\n");
 			printf("\tid:   %d\n", file_id);
@@ -61,11 +63,11 @@ main(int argc, char **argv)
 		}
 	}
 
-	struct pool *p = start_pool(&pm.main, c, QOS_CLASS_UTILITY);
+	struct pool *p = pool_start(&pm.main, c, QOS_CLASS_UTILITY);
 	void **args = alloc(&pm.main.perm, void *, c);
 	for (u32 i = 0; i < c; i++) {
 		args[i] = (void *)(0xdeadbeef + i);
 	}
-	// execute(p, work, args);
-	// execute(p, work, args);
+	pool_sched(p, work, args);
+	pool_sched(p, work, args);
 }

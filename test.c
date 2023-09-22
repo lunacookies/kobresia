@@ -2,12 +2,12 @@
 
 #if DEVELOP
 
-#define DIVIDER (sstr("===\n"))
+#define DIVIDER (S("===\n"))
 
-typedef struct s (*test_fn)(struct mem *m, struct s input);
+typedef struct str (*test_fn)(struct mem *m, struct str input);
 
 static void
-run_component_tests(struct mem *m, struct s path, test_fn f)
+run_component_tests(struct mem *m, struct str path, test_fn f)
 {
 	DIR *d = opendir((char *)path.p);
 
@@ -56,13 +56,14 @@ run_component_tests(struct mem *m, struct s path, test_fn f)
 		}
 
 		usize divider_pos = (usize)((u8 *)divider_p - content);
-		struct s input = create_s(content, divider_pos);
+		struct str input = str_make(content, divider_pos);
 
 		u8 *expect_start = content + divider_pos + DIVIDER.n;
 		usize expect_length = size - divider_pos - DIVIDER.n;
-		struct s expect_output = create_s(expect_start, expect_length);
+		struct str expect_output =
+		        str_make(expect_start, expect_length);
 
-		struct s actual_output = f(m, input);
+		struct str actual_output = f(m, input);
 
 		if (expect_output.n == actual_output.n &&
 		        memcmp(expect_output.p, actual_output.p,
@@ -84,7 +85,7 @@ run_component_tests(struct mem *m, struct s path, test_fn f)
 void
 run_tests(struct mem *m)
 {
-	run_component_tests(m, sstr("test_data_lexer"), lex_test);
+	run_component_tests(m, S("test_data_lexer"), lex_test);
 }
 
 #endif

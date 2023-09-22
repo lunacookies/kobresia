@@ -9,7 +9,7 @@ enum {
 };
 
 void
-discover_project(struct project *p, struct mem *m)
+project_search(struct project *p, struct mem *m)
 {
 	struct arena_temp t = arena_temp_begin(&m->temp);
 
@@ -135,14 +135,14 @@ discover_project(struct project *p, struct mem *m)
 	p->file_count = file_count;
 	p->pkg_count = pkg_count;
 
-	p->file_names = alloc_copy_s(
-	        &m->perm, create_s(file_names.buf.p, file_names.used), 1);
-	p->file_paths = alloc_copy_s(
-	        &m->perm, create_s(file_paths.buf.p, file_paths.used), 1);
-	p->pkg_names = alloc_copy_s(
-	        &m->perm, create_s(pkg_names.buf.p, pkg_names.used), 1);
-	p->pkg_paths = alloc_copy_s(
-	        &m->perm, create_s(pkg_paths.buf.p, pkg_paths.used), 1);
+	p->file_names = alloc_copy_str(
+	        &m->perm, str_make(file_names.buf.p, file_names.used), 1);
+	p->file_paths = alloc_copy_str(
+	        &m->perm, str_make(file_paths.buf.p, file_paths.used), 1);
+	p->pkg_names = alloc_copy_str(
+	        &m->perm, str_make(pkg_names.buf.p, pkg_names.used), 1);
+	p->pkg_paths = alloc_copy_str(
+	        &m->perm, str_make(pkg_paths.buf.p, pkg_paths.used), 1);
 
 	// the “starts” arrays also include an end
 	p->file_name_starts =
@@ -164,42 +164,42 @@ discover_project(struct project *p, struct mem *m)
 	arena_temp_end(t);
 }
 
-struct s
+struct str
 project_file_name(struct project *p, u32 id)
 {
 	assert(id < p->file_count);
 	u32 start = p->file_name_starts[id];
 	u32 end = p->file_name_starts[id + 1];
 	u32 length = end - start;
-	return create_s(&p->file_names[start], length);
+	return str_make(&p->file_names[start], length);
 }
 
-struct s
+struct str
 project_file_path(struct project *p, u32 id)
 {
 	assert(id < p->file_count);
 	u32 start = p->file_path_starts[id];
 	u32 end = p->file_path_starts[id + 1] - 1; // remove null terminator
 	u32 length = end - start;
-	return create_s(&p->file_paths[start], length);
+	return str_make(&p->file_paths[start], length);
 }
 
-struct s
+struct str
 project_pkg_name(struct project *p, u32 id)
 {
 	assert(id < p->pkg_count);
 	u32 start = p->pkg_name_starts[id];
 	u32 end = p->pkg_name_starts[id + 1];
 	u32 length = end - start;
-	return create_s(&p->pkg_names[start], length);
+	return str_make(&p->pkg_names[start], length);
 }
 
-struct s
+struct str
 project_pkg_path(struct project *p, u32 id)
 {
 	assert(id < p->pkg_count);
 	u32 start = p->pkg_path_starts[id];
 	u32 end = p->pkg_path_starts[id + 1] - 1; // remove null terminator
 	u32 length = end - start;
-	return create_s(&p->pkg_paths[start], length);
+	return str_make(&p->pkg_paths[start], length);
 }

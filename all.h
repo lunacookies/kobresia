@@ -29,32 +29,32 @@ typedef size_t usize;
 #define MEBIBYTE (1024 * KIBIBYTE)
 #define GIBIBYTE (1024 * MEBIBYTE)
 
-// s.c
+// str.c
 
-struct s {
+struct str {
 	u8 *p;
 	usize n;
 };
-struct s create_s(void *p, usize n);
-#define sstr(str) (create_s((str), sizeof(str) - 1))
+struct str str_make(void *p, usize n);
+#define S(str) (str_make((str), sizeof(str) - 1))
 
 // arena.c
 
 struct arena {
-	struct s buf;
+	struct str buf;
 	usize used, temp_count;
 };
 
-void init_arena(struct arena *a, struct s buf);
+void arena_init(struct arena *a, struct str buf);
 
 void *_alloc(struct arena *a, usize size, usize align);
 #define alloc(a, t, n) ((t *)_alloc((a), sizeof(t) * (n), alignof(t)))
-struct s alloc_s(struct arena *a, usize size, usize align);
+struct str alloc_str(struct arena *a, usize size, usize align);
 void alloc_arena(struct arena *a, struct arena *out, usize size, usize align);
 void *_alloc_copy(struct arena *a, void *data, usize size, usize align);
 #define alloc_copy(a, t, v, n)                                                 \
 	((t *)_alloc_copy((a), (v), sizeof(t) * (n), alignof(t)))
-void *alloc_copy_s(struct arena *a, struct s from, usize align);
+void *alloc_copy_str(struct arena *a, struct str from, usize align);
 void *alloc_copy_arena(struct arena *a, struct arena *from, usize align);
 void arena_printf(struct arena *a, char *fmt, ...);
 
@@ -68,7 +68,7 @@ void arena_temp_end(struct arena_temp t);
 
 // early_death.c
 
-void early_death(struct s msg);
+void early_death(struct str msg);
 
 // mem.c
 
@@ -82,8 +82,8 @@ struct proc_mem {
 	struct mem *workers;
 };
 
-struct s os_alloc(usize nbytes);
-void alloc_proc_mem(struct proc_mem *pm, u32 core_count);
+struct str os_alloc(usize nbytes);
+void proc_mem_alloc(struct proc_mem *pm, u32 core_count);
 
 // thread.c
 
@@ -96,7 +96,7 @@ struct barrier {
 	u32 threads;
 };
 
-void barrier_create(struct barrier *b, u32 n);
+void barrier_init(struct barrier *b, u32 n);
 void barrier_wait(struct barrier *b);
 
 typedef void (*job)(u32, void *);
@@ -108,8 +108,8 @@ struct pool {
 	u32 count;
 };
 
-struct pool *start_pool(struct mem *m, u32 core_count, qos_class_t qos);
-void execute(struct pool *p, job j, void **args);
+struct pool *pool_start(struct mem *m, u32 core_count, qos_class_t qos);
+void pool_sched(struct pool *p, job j, void **args);
 
 // diagnostics.c
 
@@ -125,7 +125,7 @@ struct diagnostics_store {
 	usize count;
 };
 
-void init_diagnostics_store(struct diagnostics_store *d, struct mem *m);
+void diagnostics_store_init(struct diagnostics_store *d, struct mem *m);
 
 // project.c
 
@@ -147,12 +147,12 @@ struct project {
 	u32 *pkg_file_counts;
 };
 
-void discover_project(struct project *p, struct mem *m);
+void project_search(struct project *p, struct mem *m);
 
-struct s project_file_name(struct project *p, u32 id);
-struct s project_file_path(struct project *p, u32 id);
-struct s project_pkg_name(struct project *p, u32 id);
-struct s project_pkg_path(struct project *p, u32 id);
+struct str project_file_name(struct project *p, u32 id);
+struct str project_file_path(struct project *p, u32 id);
+struct str project_pkg_name(struct project *p, u32 id);
+struct str project_pkg_path(struct project *p, u32 id);
 
 // lexer.c
 
@@ -172,11 +172,11 @@ struct tokens {
 	usize count;
 };
 
-struct s token_kind_name(enum token_kind k);
-void lex(struct tokens *t, struct mem *m, struct s input);
+struct str token_kind_name(enum token_kind k);
+void lex(struct tokens *t, struct mem *m, struct str input);
 
 #if DEVELOP
-struct s lex_test(struct mem *m, struct s input);
+struct str lex_test(struct mem *m, struct str input);
 #endif
 
 // test.c
