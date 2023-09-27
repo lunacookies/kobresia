@@ -29,6 +29,8 @@ typedef size_t usize;
 #define MEBIBYTE (1024 * KIBIBYTE)
 #define GIBIBYTE (1024 * MEBIBYTE)
 
+#define cast(t) (t)
+
 // str.c
 
 struct str {
@@ -62,12 +64,12 @@ struct arena {
 void arena_init(struct arena *a, struct str buf);
 
 void *_alloc(struct arena *a, usize size, usize align);
-#define alloc(a, t, n) ((t *)_alloc((a), sizeof(t) * (n), alignof(t)))
+#define alloc(a, t, n) (cast(t *) _alloc((a), sizeof(t) * (n), alignof(t)))
 struct str alloc_str(struct arena *a, usize size, usize align);
 void alloc_arena(struct arena *a, struct arena *out, usize size);
 void *_alloc_copy(struct arena *a, void *data, usize size, usize align);
 #define alloc_copy(a, t, v, n)                                                 \
-	((t *)_alloc_copy((a), (v), sizeof(t) * (n), alignof(t)))
+	(cast(t *) _alloc_copy((a), (v), sizeof(t) * (n), alignof(t)))
 struct str alloc_copy_str(struct arena *a, struct str from, usize align);
 
 struct arena_temp {

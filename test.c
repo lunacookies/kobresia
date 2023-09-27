@@ -9,7 +9,7 @@ typedef struct str (*test_fn)(struct mem *m, struct str input);
 static void
 run_component_tests(struct mem *m, struct str path, test_fn f)
 {
-	DIR *d = opendir((char *)path.p);
+	DIR *d = opendir(cast(char *) path.p);
 
 	while (true) {
 		struct dirent *entry = readdir(d);
@@ -39,7 +39,7 @@ run_component_tests(struct mem *m, struct str path, test_fn f)
 		i32 fd = open(entry_path, O_RDONLY);
 		struct stat s = { 0 };
 		fstat(fd, &s);
-		usize size = (usize)s.st_size;
+		usize size = cast(usize) s.st_size;
 
 		u8 *content = alloc(&m->temp, u8, size + 1);
 		read(fd, content, size);
@@ -48,14 +48,15 @@ run_component_tests(struct mem *m, struct str path, test_fn f)
 		// Find where the divider between input source and expect
 		// output is located in the file contents.
 
-		char *divider_p = strstr((char *)content, (char *)DIVIDER.p);
+		char *divider_p =
+		        strstr(cast(char *) content, cast(char *) DIVIDER.p);
 		if (divider_p == NULL) {
 			fprintf(stderr, "test %s has no divider.\n",
 			        entry_path);
 			continue;
 		}
 
-		usize divider_pos = (usize)((u8 *)divider_p - content);
+		usize divider_pos = cast(usize)(cast(u8 *) divider_p - content);
 		struct str input = str_make(content, divider_pos);
 
 		u8 *expect_start = content + divider_pos + DIVIDER.n;
@@ -74,9 +75,9 @@ run_component_tests(struct mem *m, struct str path, test_fn f)
 
 		printf("*** fail - %s\n", entry_path);
 		printf("expect (%zu):\n%.*s\n", expect_output.n,
-		        (int)expect_output.n, expect_output.p);
+		        cast(int) expect_output.n, expect_output.p);
 		printf("actual (%zu):\n%.*s\n", actual_output.n,
-		        (int)actual_output.n, actual_output.p);
+		        cast(int) actual_output.n, actual_output.p);
 
 		arena_temp_end(t);
 	}

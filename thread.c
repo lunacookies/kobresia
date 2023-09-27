@@ -59,7 +59,7 @@ struct worker_args {
 static void *
 worker(void *a)
 {
-	struct worker_args *args = (struct worker_args *)a;
+	struct worker_args *args = cast(struct worker_args *) a;
 	u32 i = args->i;
 	struct pool *p = args->p;
 
@@ -100,7 +100,7 @@ pool_start(struct mem *m, u32 core_count, qos_class_t qos)
 
 		struct worker_args *args =
 		        alloc(&m->perm, struct worker_args, 1);
-		*args = (struct worker_args){ .i = i, .p = p };
+		*args = cast(struct worker_args){ .i = i, .p = p };
 
 		pthread_attr_t attr;
 		pthread_attr_init(&attr);

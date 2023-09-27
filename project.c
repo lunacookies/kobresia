@@ -27,7 +27,7 @@ dense_init(struct dense *d, struct mem *m, usize count, usize elem_len)
 static struct strbuf *
 dense_push(struct dense *d)
 {
-	d->starts[d->count] = (u32)d->data.used;
+	d->starts[d->count] = cast(u32) d->data.used;
 	d->count++;
 	return &d->data;
 }
@@ -35,12 +35,12 @@ dense_push(struct dense *d)
 static void
 dense_finish(struct dense *d, struct mem *m, char **data, u32 **starts)
 {
-	d->starts[d->count] = (u32)d->data.used;
+	d->starts[d->count] = cast(u32) d->data.used;
 
 	// Copy data from temp memory into permanent memory.
 	struct str in_temp = strbuf_done(&d->data);
 	struct str in_perm = alloc_copy_str(&m->perm, in_temp, 1);
-	*data = (char *)in_perm.p;
+	*data = cast(char *) in_perm.p;
 
 	*starts = alloc_copy(&m->perm, u32, d->starts, d->count + 1);
 }

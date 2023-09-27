@@ -47,7 +47,7 @@ lex(struct tokens *t, struct mem *m, struct str input)
 	struct span *spans = alloc(&m->temp, struct span, input.n);
 	usize count = 0;
 
-	char *inp = (char *)input.p;
+	char *inp = cast(char *) input.p;
 	u32 i = 0;
 	while (i < input.n) {
 		if (whitespace(inp[i])) {
@@ -64,7 +64,7 @@ lex(struct tokens *t, struct mem *m, struct str input)
 			}
 			kinds[count] = T_IDENT;
 			spans[count] =
-			        (struct span){ .start = start, .end = i };
+			        cast(struct span){ .start = start, .end = i };
 			count++;
 			continue;
 		}
@@ -76,13 +76,13 @@ lex(struct tokens *t, struct mem *m, struct str input)
 			}
 			kinds[count] = T_NUMBER;
 			spans[count] =
-			        (struct span){ .start = start, .end = i };
+			        cast(struct span){ .start = start, .end = i };
 			count++;
 			continue;
 		}
 
 		kinds[count] = T_INVALID;
-		spans[count] = (struct span){ .start = i, .end = i + 1 };
+		spans[count] = cast(struct span){ .start = i, .end = i + 1 };
 		i++;
 		count++;
 		continue;
@@ -109,7 +109,7 @@ lex_test(struct mem *m, struct str input)
 		enum token_kind kind = toks.kinds[i];
 		struct span span = toks.spans[i];
 		struct str name = token_kind_name(kind);
-		strbuf_printf(&out, "%.*s@%d..%d\n", (int)name.n, name.p,
+		strbuf_printf(&out, "%.*s@%d..%d\n", cast(int) name.n, name.p,
 		        span.start, span.end);
 	}
 

@@ -11,7 +11,7 @@ arena_init(struct arena *a, struct str buf)
 static void *
 alloc_uninit(struct arena *a, usize size, usize align)
 {
-	usize padding = align - ((usize)(a->buf.p + a->used) % align);
+	usize padding = align - (cast(usize)(a->buf.p + a->used) % align);
 	if (padding == align) {
 		padding = 0;
 	}
@@ -72,7 +72,7 @@ struct arena_temp
 arena_temp_begin(struct arena *a)
 {
 	a->temp_count++;
-	return (struct arena_temp){
+	return cast(struct arena_temp){
 		.a = a,
 		.used = a->used,
 	};
