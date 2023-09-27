@@ -8,25 +8,52 @@ enum {
 	MAX_ENTITIES = MAX_PKGS + MAX_FILES,
 };
 
+// Dense append-only storage for many strings.
+struct dense {
+	struct arena data;
+	u32 *starts;
+	usize count;
+};
+
+static void
+dense_init(struct dense *d, struct mem *m, usize count, usize elem_len)
+{
+	memset(&d->data, 0, sizeof(d->data));
+	alloc_arena(&m->temp, &d->data, elem_len * count, 1);
+	d->starts = alloc(&m->temp, u32, count + 1);
+	d->count = 0;
+}
+
+static struct arena *
+dense_push(struct dense *d)
+{
+	d->starts[d->count] = (u32)d->data.used;
+	d->count++;
+	return &d->data;
+}
+
+static void
+dense_finish(struct dense *d, struct mem *m, char **data, u32 **starts)
+{
+	d->starts[d->count] = (u32)d->data.used;
+	*data = alloc_copy_arena(&m->perm, &d->data, 1);
+	*starts = alloc_copy(&m->perm, u32, d->starts, d->count + 1);
+}
+
 void
 project_search(struct project *p, struct mem *m)
 {
 	struct arena_temp t = arena_temp_begin(&m->temp);
 
-	struct arena file_names = { 0 };
-	struct arena file_paths = { 0 };
-	struct arena pkg_names = { 0 };
-	struct arena pkg_paths = { 0 };
+	struct dense file_names = { 0 };
+	struct dense file_paths = { 0 };
+	struct dense pkg_names = { 0 };
+	struct dense pkg_paths = { 0 };
 
-	alloc_arena(&m->temp, &file_names, NAME_LEN * MAX_FILES, 1);
-	alloc_arena(&m->temp, &file_paths, PATH_LEN * MAX_FILES, 1);
-	alloc_arena(&m->temp, &pkg_names, NAME_LEN * MAX_PKGS, 1);
-	alloc_arena(&m->temp, &pkg_paths, PATH_LEN * MAX_PKGS, 1);
-
-	u32 *file_name_starts = alloc(&m->temp, u32, MAX_FILES);
-	u32 *file_path_starts = alloc(&m->temp, u32, MAX_FILES);
-	u32 *pkg_name_starts = alloc(&m->temp, u32, MAX_PKGS);
-	u32 *pkg_path_starts = alloc(&m->temp, u32, MAX_PKGS);
+	dense_init(&file_names, m, MAX_FILES, NAME_LEN);
+	dense_init(&file_paths, m, MAX_FILES, PATH_LEN);
+	dense_init(&pkg_names, m, MAX_PKGS, NAME_LEN);
+	dense_init(&pkg_paths, m, MAX_PKGS, PATH_LEN);
 
 	u32 *file_pkgs = alloc(&m->temp, u32, MAX_FILES);
 
@@ -81,23 +108,22 @@ project_search(struct project *p, struct mem *m)
 
 			assert(file_count < MAX_FILES);
 
-			file_name_starts[file_count] = (u32)file_names.used;
-			alloc_copy(&file_names, u8, file_entry->d_name,
+			struct arena *name = dense_push(&file_names);
+			alloc_copy(name, u8, file_entry->d_name,
 			        file_entry->d_namlen);
 
-			file_path_starts[file_count] = (u32)file_paths.used;
-
-			alloc_copy(&file_paths, u8, pkg_entry->d_name,
+			struct arena *path = dense_push(&file_paths);
+			alloc_copy(path, u8, pkg_entry->d_name,
 			        pkg_entry->d_namlen);
 
 			u8 slash = '/';
-			alloc_copy(&file_paths, u8, &slash, 1);
+			alloc_copy(path, u8, &slash, 1);
 
-			alloc_copy(&file_paths, u8, file_entry->d_name,
+			alloc_copy(path, u8, file_entry->d_name,
 			        file_entry->d_namlen);
 
 			u8 null = 0;
-			alloc_copy(&file_paths, u8, &null, 1);
+			alloc_copy(path, u8, &null, 1);
 
 			file_pkgs[file_count] = pkg_count;
 
@@ -110,16 +136,14 @@ project_search(struct project *p, struct mem *m)
 
 		assert(pkg_count < MAX_PKGS);
 
-		pkg_name_starts[pkg_count] = (u32)pkg_names.used;
-		alloc_copy(
-		        &pkg_names, u8, pkg_entry->d_name, pkg_entry->d_namlen);
+		struct arena *name = dense_push(&pkg_names);
+		alloc_copy(name, u8, pkg_entry->d_name, pkg_entry->d_namlen);
 
-		pkg_path_starts[pkg_count] = (u32)pkg_paths.used;
-		alloc_copy(
-		        &pkg_paths, u8, pkg_entry->d_name, pkg_entry->d_namlen);
+		struct arena *path = dense_push(&pkg_paths);
+		alloc_copy(path, u8, pkg_entry->d_name, pkg_entry->d_namlen);
 
 		u8 null = 0;
-		alloc_copy(&pkg_paths, u8, &null, 1);
+		alloc_copy(path, u8, &null, 1);
 
 		pkg_first_files[pkg_count] = first_file_in_pkg;
 		pkg_file_counts[pkg_count] = files_in_pkg;
@@ -127,32 +151,13 @@ project_search(struct project *p, struct mem *m)
 		pkg_count++;
 	}
 
-	file_name_starts[file_count] = (u32)file_names.used;
-	file_path_starts[file_count] = (u32)file_paths.used;
-	pkg_name_starts[pkg_count] = (u32)pkg_names.used;
-	pkg_path_starts[pkg_count] = (u32)pkg_paths.used;
+	dense_finish(&file_names, m, &p->file_names, &p->file_name_starts);
+	dense_finish(&file_paths, m, &p->file_paths, &p->file_path_starts);
+	dense_finish(&pkg_names, m, &p->pkg_names, &p->pkg_name_starts);
+	dense_finish(&pkg_paths, m, &p->pkg_paths, &p->pkg_path_starts);
 
 	p->file_count = file_count;
 	p->pkg_count = pkg_count;
-
-	p->file_names = alloc_copy_str(
-	        &m->perm, str_make(file_names.buf.p, file_names.used), 1);
-	p->file_paths = alloc_copy_str(
-	        &m->perm, str_make(file_paths.buf.p, file_paths.used), 1);
-	p->pkg_names = alloc_copy_str(
-	        &m->perm, str_make(pkg_names.buf.p, pkg_names.used), 1);
-	p->pkg_paths = alloc_copy_str(
-	        &m->perm, str_make(pkg_paths.buf.p, pkg_paths.used), 1);
-
-	// the “starts” arrays also include an end
-	p->file_name_starts =
-	        alloc_copy(&m->perm, u32, file_name_starts, file_count + 1);
-	p->file_path_starts =
-	        alloc_copy(&m->perm, u32, file_path_starts, file_count + 1);
-	p->pkg_name_starts =
-	        alloc_copy(&m->perm, u32, pkg_name_starts, pkg_count + 1);
-	p->pkg_path_starts =
-	        alloc_copy(&m->perm, u32, pkg_path_starts, pkg_count + 1);
 
 	p->file_pkgs = alloc_copy(&m->perm, u32, file_pkgs, file_count);
 
