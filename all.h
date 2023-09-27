@@ -58,7 +58,7 @@ void strbuilder_printf(struct strbuilder *sb, char *fmt, ...);
 
 struct arena {
 	struct str buf;
-	usize used, temp_count;
+	usize used, peak_used, temp_count;
 };
 
 void arena_init(struct arena *a, struct str buf);
