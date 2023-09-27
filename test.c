@@ -21,22 +21,28 @@ run_component_tests(struct mem *m, struct str path, test_fn f)
 		}
 
 		struct arena_temp t = arena_temp_begin(&m->temp);
+		struct str entry_name =
+		        str_make(entry->d_name, entry->d_namlen);
 
 		// Copy together a path to this file.
 
 		// + 1 for slash
 		// + 1 for null terminator
 		usize entry_path_length = path.n + 1 + entry->d_namlen + 1;
-		char *entry_path = alloc(&m->temp, char, entry_path_length);
-
-		memcpy(entry_path, path.p, path.n);
-		entry_path[path.n] = '/';
-		memcpy(entry_path + path.n + 1, entry->d_name, entry->d_namlen);
-		entry_path[path.n + 1 + entry->d_namlen] = '\0';
+		struct str entry_path =
+		        alloc_str(&m->temp, entry_path_length, 1);
+		struct strbuilder entry_path_builder = { 0 };
+		strbuilder_init(&entry_path_builder, entry_path);
+		strbuilder_push(&entry_path_builder, path);
+		strbuilder_byte(&entry_path_builder, '/');
+		strbuilder_push(&entry_path_builder, entry_name);
+		strbuilder_byte(&entry_path_builder, 0);
+		assert(entry_path_builder.used == entry_path_length);
+		entry_path = strbuilder_done(&entry_path_builder);
 
 		// Next. we read the contents of the file.
 
-		i32 fd = open(entry_path, O_RDONLY);
+		i32 fd = open(cast(char *) entry_path.p, O_RDONLY);
 		struct stat s = { 0 };
 		fstat(fd, &s);
 		usize size = cast(usize) s.st_size;
@@ -51,8 +57,8 @@ run_component_tests(struct mem *m, struct str path, test_fn f)
 		char *divider_p =
 		        strstr(cast(char *) content, cast(char *) DIVIDER.p);
 		if (divider_p == NULL) {
-			fprintf(stderr, "test %s has no divider.\n",
-			        entry_path);
+			fprintf(stderr, "test %.*s has no divider.\n",
+			        cast(int) entry_path.n, entry_path.p);
 			continue;
 		}
 
@@ -69,11 +75,13 @@ run_component_tests(struct mem *m, struct str path, test_fn f)
 		if (expect_output.n == actual_output.n &&
 		        memcmp(expect_output.p, actual_output.p,
 		                expect_output.n) == 0) {
-			printf("*** pass - %s\n", entry_path);
+			printf("*** pass - %.*s\n", cast(int) entry_path.n,
+			        entry_path.p);
 			continue;
 		}
 
-		printf("*** fail - %s\n", entry_path);
+		printf("*** fail - %.*s\n", cast(int) entry_path.n,
+		        entry_path.p);
 		printf("expect (%zu):\n%.*s\n", expect_output.n,
 		        cast(int) expect_output.n, expect_output.p);
 		printf("actual (%zu):\n%.*s\n", actual_output.n,
