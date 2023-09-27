@@ -8,8 +8,8 @@ arena_init(struct arena *a, struct str buf)
 	a->temp_count = 0;
 }
 
-void *
-_alloc(struct arena *a, usize size, usize align)
+static void *
+alloc_uninit(struct arena *a, usize size, usize align)
 {
 	usize padding = align - ((usize)(a->buf.p + a->used) % align);
 	if (padding == align) {
@@ -21,6 +21,13 @@ _alloc(struct arena *a, usize size, usize align)
 	a->used += padding;
 	void *p = a->buf.p + a->used;
 	a->used += size;
+	return p;
+}
+
+void *
+_alloc(struct arena *a, usize size, usize align)
+{
+	void *p = alloc_uninit(a, size, align);
 
 #if DEVELOP
 	memset(p, '*', size);
@@ -40,14 +47,15 @@ alloc_str(struct arena *a, usize size, usize align)
 void
 alloc_arena(struct arena *a, struct arena *out, usize size, usize align)
 {
-	struct str buf = alloc_str(a, size, align);
-	arena_init(out, buf);
+	void *p = alloc_uninit(a, size, align);
+	struct str s = str_make(p, size);
+	arena_init(out, s);
 }
 
 void *
 _alloc_copy(struct arena *a, void *data, usize size, usize align)
 {
-	u8 *p = _alloc(a, size, align);
+	u8 *p = alloc_uninit(a, size, align);
 	memcpy(p, data, size);
 	return p;
 }
@@ -55,7 +63,7 @@ _alloc_copy(struct arena *a, void *data, usize size, usize align)
 void *
 alloc_copy_str(struct arena *a, struct str from, usize align)
 {
-	u8 *p = _alloc(a, from.n, align);
+	u8 *p = alloc_uninit(a, from.n, align);
 	memcpy(p, from.p, from.n);
 	return p;
 }
