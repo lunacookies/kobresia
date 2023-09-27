@@ -28,11 +28,17 @@ void *
 _alloc(struct arena *a, usize size, usize align)
 {
 	void *p = alloc_uninit(a, size, align);
+	memset(p, 0, size);
+	return p;
+}
 
+void *
+_alloc_u(struct arena *a, usize size, usize align)
+{
+	void *p = alloc_uninit(a, size, align);
 #if DEVELOP
 	memset(p, '*', size);
 #endif
-
 	return p;
 }
 
@@ -40,6 +46,14 @@ struct str
 alloc_str(struct arena *a, usize size, usize align)
 {
 	void *p = _alloc(a, size, align);
+	struct str new = str_make(p, size);
+	return new;
+}
+
+struct str
+alloc_str_u(struct arena *a, usize size, usize align)
+{
+	void *p = _alloc_u(a, size, align);
 	struct str new = str_make(p, size);
 	return new;
 }

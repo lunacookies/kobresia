@@ -64,9 +64,14 @@ struct arena {
 void arena_init(struct arena *a, struct str buf);
 
 void *_alloc(struct arena *a, usize size, usize align);
+void *_alloc_u(struct arena *a, usize size, usize align);
 #define alloc(a, t, n) (cast(t *) _alloc((a), sizeof(t) * (n), alignof(t)))
+#define alloc_u(a, t, n) (cast(t *) _alloc_u((a), sizeof(t) * (n), alignof(t)))
 struct str alloc_str(struct arena *a, usize size, usize align);
+struct str alloc_str_u(struct arena *a, usize size, usize align);
+
 void alloc_arena(struct arena *a, struct arena *out, usize size);
+
 void *_alloc_copy(struct arena *a, void *data, usize size, usize align);
 #define alloc_copy(a, t, v, n)                                                 \
 	(cast(t *) _alloc_copy((a), (v), sizeof(t) * (n), alignof(t)))

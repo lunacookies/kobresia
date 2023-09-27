@@ -18,9 +18,9 @@ struct dense {
 static void
 dense_init(struct dense *d, struct mem *m, usize count, usize elem_len)
 {
-	struct str data_buf = alloc_str(&m->temp, elem_len * count, 1);
+	struct str data_buf = alloc_str_u(&m->temp, elem_len * count, 1);
 	strbuilder_init(&d->data, data_buf);
-	d->starts = alloc(&m->temp, u32, count + 1);
+	d->starts = alloc_u(&m->temp, u32, count + 1);
 	d->count = 0;
 }
 
@@ -60,10 +60,10 @@ project_search(struct project *p, struct mem *m)
 	dense_init(&pkg_names, m, MAX_PKGS, NAME_LEN);
 	dense_init(&pkg_paths, m, MAX_PKGS, PATH_LEN);
 
-	u32 *file_pkgs = alloc(&m->temp, u32, MAX_FILES);
+	u32 *file_pkgs = alloc_u(&m->temp, u32, MAX_FILES);
 
-	u32 *pkg_first_files = alloc(&m->temp, u32, MAX_PKGS);
-	u32 *pkg_file_counts = alloc(&m->temp, u32, MAX_PKGS);
+	u32 *pkg_first_files = alloc_u(&m->temp, u32, MAX_PKGS);
+	u32 *pkg_file_counts = alloc_u(&m->temp, u32, MAX_PKGS);
 
 	u32 file_count = 0;
 	u32 pkg_count = 0;

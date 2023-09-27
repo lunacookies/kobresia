@@ -43,8 +43,8 @@ lex(struct tokens *t, struct mem *m, struct str input)
 	struct arena_temp temp = arena_temp_begin(&m->temp);
 
 	// the maximum number of tokens is one per byte of input
-	enum token_kind *kinds = alloc(&m->temp, enum token_kind, input.n);
-	struct span *spans = alloc(&m->temp, struct span, input.n);
+	enum token_kind *kinds = alloc_u(&m->temp, enum token_kind, input.n);
+	struct span *spans = alloc_u(&m->temp, struct span, input.n);
 	usize count = 0;
 
 	char *inp = cast(char *) input.p;
@@ -103,7 +103,7 @@ lex_test(struct mem *m, struct str input)
 
 	struct arena_temp t = arena_temp_begin(&m->temp);
 	struct strbuilder out = { 0 };
-	strbuilder_init(&out, alloc_str(&m->temp, 16 * KIBIBYTE, 1));
+	strbuilder_init(&out, alloc_str_u(&m->temp, 16 * KIBIBYTE, 1));
 
 	for (usize i = 0; i < toks.count; i++) {
 		enum token_kind kind = toks.kinds[i];
