@@ -45,9 +45,9 @@ alloc_str(struct arena *a, usize size, usize align)
 }
 
 void
-alloc_arena(struct arena *a, struct arena *out, usize size, usize align)
+alloc_arena(struct arena *a, struct arena *out, usize size)
 {
-	void *p = alloc_uninit(a, size, align);
+	void *p = alloc_uninit(a, size, 1);
 	struct str s = str_make(p, size);
 	arena_init(out, s);
 }
@@ -69,10 +69,10 @@ alloc_copy_str(struct arena *a, struct str from, usize align)
 }
 
 void *
-alloc_copy_arena(struct arena *a, struct arena *from, usize align)
+alloc_copy_arena(struct arena *a, struct arena *from)
 {
 	struct str used = str_make(from->buf.p, from->used);
-	return alloc_copy_str(a, used, align);
+	return alloc_copy_str(a, used, 1);
 }
 
 struct arena_temp

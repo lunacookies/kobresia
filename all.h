@@ -50,12 +50,12 @@ void arena_init(struct arena *a, struct str buf);
 void *_alloc(struct arena *a, usize size, usize align);
 #define alloc(a, t, n) ((t *)_alloc((a), sizeof(t) * (n), alignof(t)))
 struct str alloc_str(struct arena *a, usize size, usize align);
-void alloc_arena(struct arena *a, struct arena *out, usize size, usize align);
+void alloc_arena(struct arena *a, struct arena *out, usize size);
 void *_alloc_copy(struct arena *a, void *data, usize size, usize align);
 #define alloc_copy(a, t, v, n)                                                 \
 	((t *)_alloc_copy((a), (v), sizeof(t) * (n), alignof(t)))
 void *alloc_copy_str(struct arena *a, struct str from, usize align);
-void *alloc_copy_arena(struct arena *a, struct arena *from, usize align);
+void *alloc_copy_arena(struct arena *a, struct arena *from);
 void arena_printf(struct arena *a, char *fmt, ...);
 
 struct arena_temp {

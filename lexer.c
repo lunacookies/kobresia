@@ -104,7 +104,7 @@ lex_test(struct mem *m, struct str input)
 	struct arena_temp t = arena_temp_begin(&m->temp);
 
 	struct arena output = { 0 };
-	alloc_arena(&m->temp, &output, 1024 * 1024, 1);
+	alloc_arena(&m->temp, &output, 1024 * 1024);
 
 	for (usize i = 0; i < toks.count; i++) {
 		enum token_kind kind = toks.kinds[i];
@@ -114,7 +114,7 @@ lex_test(struct mem *m, struct str input)
 		        span.start, span.end);
 	}
 
-	void *p = alloc_copy_arena(&m->perm, &output, 1);
+	void *p = alloc_copy_arena(&m->perm, &output);
 	arena_temp_end(t);
 	return str_make(p, output.used);
 }

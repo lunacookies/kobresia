@@ -19,7 +19,7 @@ static void
 dense_init(struct dense *d, struct mem *m, usize count, usize elem_len)
 {
 	memset(&d->data, 0, sizeof(d->data));
-	alloc_arena(&m->temp, &d->data, elem_len * count, 1);
+	alloc_arena(&m->temp, &d->data, elem_len * count);
 	d->starts = alloc(&m->temp, u32, count + 1);
 	d->count = 0;
 }
@@ -36,7 +36,7 @@ static void
 dense_finish(struct dense *d, struct mem *m, char **data, u32 **starts)
 {
 	d->starts[d->count] = (u32)d->data.used;
-	*data = alloc_copy_arena(&m->perm, &d->data, 1);
+	*data = alloc_copy_arena(&m->perm, &d->data);
 	*starts = alloc_copy(&m->perm, u32, d->starts, d->count + 1);
 }
 
