@@ -18,10 +18,10 @@ struct dense {
 static void
 dense_init(struct dense *d, struct mem *m, usize count, usize elem_len)
 {
+	assert_zero(d);
 	struct str data_buf = alloc_str_u(&m->temp, elem_len * count, 1);
 	strbuilder_init(&d->data, data_buf);
 	d->starts = alloc_u(&m->temp, u32, count + 1);
-	d->count = 0;
 }
 
 static struct strbuilder *
@@ -48,13 +48,11 @@ dense_finish(struct dense *d, struct mem *m, char **data, u32 **starts)
 void
 project_search(struct project *p, struct mem *m)
 {
+	assert_zero(p);
+
 	struct arena_temp t = arena_temp_begin(&m->temp);
 
-	struct dense file_names = { 0 };
-	struct dense file_paths = { 0 };
-	struct dense pkg_names = { 0 };
-	struct dense pkg_paths = { 0 };
-
+	struct dense file_names, file_paths, pkg_names, pkg_paths;
 	dense_init(&file_names, m, MAX_FILES, NAME_LEN);
 	dense_init(&file_paths, m, MAX_FILES, PATH_LEN);
 	dense_init(&pkg_names, m, MAX_PKGS, NAME_LEN);

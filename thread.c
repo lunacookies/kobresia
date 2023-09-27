@@ -3,18 +3,20 @@
 u32
 core_count(void)
 {
-	u32 value = 0;
+	u32 value;
 	usize size = sizeof(u32);
 	i32 code = sysctlbyname("hw.logicalcpu_max", &value, &size, NULL, 0);
 	assert(code == 0);
 	assert(size == sizeof(u32));
-	assert(value != 0);
+	assert(value > 0);
 	return value;
 }
 
 void
 barrier_init(struct barrier *b, u32 n)
 {
+	assert_zero(b);
+
 	pthread_condattr_t condattr;
 	pthread_condattr_init(&condattr);
 	pthread_cond_init(&b->cond, &condattr);
@@ -25,7 +27,6 @@ barrier_init(struct barrier *b, u32 n)
 	pthread_mutex_init(&b->mutex, &mutexattr);
 	pthread_mutexattr_destroy(&mutexattr);
 
-	b->n = 0;
 	b->threads = n;
 }
 
@@ -95,12 +96,10 @@ pool_start(struct mem *m, u32 core_count, qos_class_t qos)
 	p->count = core_count;
 
 	for (u32 i = 0; i < core_count; i++) {
-		p->jobs[i] = NULL;
-		p->args[i] = NULL;
-
 		struct worker_args *args =
 		        alloc(&m->perm, struct worker_args, 1);
-		*args = cast(struct worker_args){ .i = i, .p = p };
+		args->i = i;
+		args->p = p;
 
 		pthread_attr_t attr;
 		pthread_attr_init(&attr);

@@ -6,10 +6,8 @@
 void
 arena_init(struct arena *a, struct str buf)
 {
+	assert_zero(a);
 	a->buf = buf;
-	a->used = 0;
-	a->peak_used = 0;
-	a->temp_count = 0;
 }
 
 static void *
@@ -149,10 +147,10 @@ struct arena_temp
 arena_temp_begin(struct arena *a)
 {
 	a->temp_count++;
-	return cast(struct arena_temp){
-		.a = a,
-		.used = a->used,
-	};
+	struct arena_temp t;
+	t.a = a;
+	t.used = a->used;
+	return t;
 }
 
 void

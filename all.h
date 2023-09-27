@@ -15,6 +15,8 @@
 #include <sys/sysctl.h>
 #include <unistd.h>
 
+// base.c
+
 typedef int8_t i8;
 typedef int16_t i16;
 typedef int32_t i32;
@@ -29,7 +31,10 @@ typedef size_t usize;
 #define MEBIBYTE (1024 * KIBIBYTE)
 #define GIBIBYTE (1024 * MEBIBYTE)
 
+void _assert_zero(void *p, usize n);
+#define assert_zero(p) (_assert_zero((p), sizeof(*(p))))
 #define cast(t) (t)
+#define zero_out(p) (memset((p), 0, sizeof(*(p))))
 
 // str.c
 

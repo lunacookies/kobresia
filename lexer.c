@@ -40,6 +40,8 @@ ident_follow(char c)
 void
 lex(struct tokens *t, struct mem *m, struct str input)
 {
+	assert_zero(t);
+
 	struct arena_temp temp = arena_temp_begin(&m->temp);
 
 	// the maximum number of tokens is one per byte of input
@@ -62,9 +64,13 @@ lex(struct tokens *t, struct mem *m, struct str input)
 			while (i < input.n && ident_follow(inp[i])) {
 				i++;
 			}
+
 			kinds[count] = T_IDENT;
-			spans[count] =
-			        cast(struct span){ .start = start, .end = i };
+
+			zero_out(&spans[count]);
+			spans[count].start = start;
+			spans[count].end = i;
+
 			count++;
 			continue;
 		}
@@ -74,15 +80,23 @@ lex(struct tokens *t, struct mem *m, struct str input)
 			while (i < input.n && number(inp[i])) {
 				i++;
 			}
+
 			kinds[count] = T_NUMBER;
-			spans[count] =
-			        cast(struct span){ .start = start, .end = i };
+
+			zero_out(&spans[count]);
+			spans[count].start = start;
+			spans[count].end = i;
+
 			count++;
 			continue;
 		}
 
 		kinds[count] = T_INVALID;
-		spans[count] = cast(struct span){ .start = i, .end = i + 1 };
+
+		zero_out(&spans[count]);
+		spans[count].start = i;
+		spans[count].end = i + 1;
+
 		i++;
 		count++;
 		continue;
@@ -98,11 +112,11 @@ lex(struct tokens *t, struct mem *m, struct str input)
 struct str
 lex_test(struct mem *m, struct str input)
 {
-	struct tokens toks = { 0 };
+	struct tokens toks;
 	lex(&toks, m, input);
 
 	struct arena_temp t = arena_temp_begin(&m->temp);
-	struct strbuilder out = { 0 };
+	struct strbuilder out;
 	strbuilder_init(&out, alloc_str_u(&m->temp, 16 * KIBIBYTE, 1));
 
 	for (usize i = 0; i < toks.count; i++) {

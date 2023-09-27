@@ -3,6 +3,7 @@ CC := clang
 CFLAGS := \
 	-std=c11 \
 	-fshort-enums \
+	-ftrivial-auto-var-init=zero \
 	-W \
 	-Wall \
 	-Wextra \

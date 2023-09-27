@@ -35,8 +35,10 @@ os_alloc(usize nbytes)
 void
 proc_mem_alloc(struct proc_mem *pm, u32 core_count)
 {
+	assert_zero(pm);
+
 	usize total = (core_count + 1) * (PERM_MEM_SIZE + TEMP_MEM_SIZE);
-	struct arena block = { 0 };
+	struct arena block;
 	arena_init(&block, os_alloc(total));
 
 	alloc_arena(&block, &pm->main.perm, PERM_MEM_SIZE);

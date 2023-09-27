@@ -3,8 +3,8 @@
 void
 strbuilder_init(struct strbuilder *sb, struct str buf)
 {
+	assert_zero(sb);
 	sb->buf = buf;
-	sb->used = 0;
 }
 
 struct str

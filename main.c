@@ -5,7 +5,9 @@ work(u32 i, void *arg)
 {
 	printf("[%d] doing work with arg %p\n", i, arg);
 
-	struct timespec ts = { .tv_sec = 1, .tv_nsec = 0 };
+	struct timespec ts;
+	ts.tv_sec = 1;
+	ts.tv_nsec = 0;
 	nanosleep(&ts, NULL);
 
 	printf("[%d] done\n", i);
@@ -15,7 +17,7 @@ int
 main(int argc, char **argv)
 {
 	u32 c = core_count();
-	struct proc_mem pm = { 0 };
+	struct proc_mem pm;
 	proc_mem_alloc(&pm, c);
 
 #if DEVELOP
@@ -25,10 +27,10 @@ main(int argc, char **argv)
 	}
 #endif
 
-	struct diagnostics_store diagnostics_store = { 0 };
+	struct diagnostics_store diagnostics_store;
 	diagnostics_store_init(&diagnostics_store, &pm.main);
 
-	struct project proj = { 0 };
+	struct project proj;
 	project_search(&proj, &pm.main);
 
 	printf("found %d packages\nfound %d files\n", proj.pkg_count,
