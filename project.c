@@ -10,7 +10,7 @@ enum {
 
 // Dense append-only storage for many strings.
 struct dense {
-	struct arena data;
+	struct strbuf data;
 	u32 *starts;
 	usize count;
 };
@@ -18,13 +18,13 @@ struct dense {
 static void
 dense_init(struct dense *d, struct mem *m, usize count, usize elem_len)
 {
-	memset(&d->data, 0, sizeof(d->data));
-	alloc_arena(&m->temp, &d->data, elem_len * count);
+	struct str data_buf = alloc_str(&m->temp, elem_len * count, 1);
+	strbuf_init(&d->data, data_buf);
 	d->starts = alloc(&m->temp, u32, count + 1);
 	d->count = 0;
 }
 
-static struct arena *
+static struct strbuf *
 dense_push(struct dense *d)
 {
 	d->starts[d->count] = (u32)d->data.used;
@@ -36,7 +36,12 @@ static void
 dense_finish(struct dense *d, struct mem *m, char **data, u32 **starts)
 {
 	d->starts[d->count] = (u32)d->data.used;
-	*data = alloc_copy_arena(&m->perm, &d->data);
+
+	// Copy data from temp memory into permanent memory.
+	struct str in_temp = strbuf_done(&d->data);
+	struct str in_perm = alloc_copy_str(&m->perm, in_temp, 1);
+	*data = (char *)in_perm.p;
+
 	*starts = alloc_copy(&m->perm, u32, d->starts, d->count + 1);
 }
 
@@ -75,6 +80,9 @@ project_search(struct project *p, struct mem *m)
 			continue;
 		}
 
+		struct str pkg_name =
+		        str_make(pkg_entry->d_name, pkg_entry->d_namlen);
+
 		DIR *pkg = opendir(pkg_entry->d_name);
 		u32 first_file_in_pkg = 0;
 		u32 files_in_pkg = 0;
@@ -108,22 +116,17 @@ project_search(struct project *p, struct mem *m)
 
 			assert(file_count < MAX_FILES);
 
-			struct arena *name = dense_push(&file_names);
-			alloc_copy(name, u8, file_entry->d_name,
-			        file_entry->d_namlen);
+			struct str file_name = str_make(
+			        file_entry->d_name, file_entry->d_namlen);
 
-			struct arena *path = dense_push(&file_paths);
-			alloc_copy(path, u8, pkg_entry->d_name,
-			        pkg_entry->d_namlen);
+			struct strbuf *name = dense_push(&file_names);
+			strbuf_push(name, file_name);
 
-			u8 slash = '/';
-			alloc_copy(path, u8, &slash, 1);
-
-			alloc_copy(path, u8, file_entry->d_name,
-			        file_entry->d_namlen);
-
-			u8 null = 0;
-			alloc_copy(path, u8, &null, 1);
+			struct strbuf *path = dense_push(&file_paths);
+			strbuf_push(path, pkg_name);
+			strbuf_byte(path, '/');
+			strbuf_push(path, file_name);
+			strbuf_byte(path, 0);
 
 			file_pkgs[file_count] = pkg_count;
 
@@ -136,14 +139,12 @@ project_search(struct project *p, struct mem *m)
 
 		assert(pkg_count < MAX_PKGS);
 
-		struct arena *name = dense_push(&pkg_names);
-		alloc_copy(name, u8, pkg_entry->d_name, pkg_entry->d_namlen);
+		struct strbuf *name = dense_push(&pkg_names);
+		strbuf_push(name, pkg_name);
 
-		struct arena *path = dense_push(&pkg_paths);
-		alloc_copy(path, u8, pkg_entry->d_name, pkg_entry->d_namlen);
-
-		u8 null = 0;
-		alloc_copy(path, u8, &null, 1);
+		struct strbuf *path = dense_push(&pkg_paths);
+		strbuf_push(path, pkg_name);
+		strbuf_byte(path, 0);
 
 		pkg_first_files[pkg_count] = first_file_in_pkg;
 		pkg_file_counts[pkg_count] = files_in_pkg;

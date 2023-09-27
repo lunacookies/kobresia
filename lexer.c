@@ -102,19 +102,19 @@ lex_test(struct mem *m, struct str input)
 	lex(&toks, m, input);
 
 	struct arena_temp t = arena_temp_begin(&m->temp);
-
-	struct arena output = { 0 };
-	alloc_arena(&m->temp, &output, 1024 * 1024);
+	struct strbuf out = { 0 };
+	strbuf_init(&out, alloc_str(&m->temp, 16 * KIBIBYTE, 1));
 
 	for (usize i = 0; i < toks.count; i++) {
 		enum token_kind kind = toks.kinds[i];
 		struct span span = toks.spans[i];
 		struct str name = token_kind_name(kind);
-		arena_printf(&output, "%.*s@%d..%d\n", (int)name.n, name.p,
+		strbuf_printf(&out, "%.*s@%d..%d\n", (int)name.n, name.p,
 		        span.start, span.end);
 	}
 
-	void *p = alloc_copy_arena(&m->perm, &output);
+	struct str out_s = strbuf_done(&out);
+	out_s = alloc_copy_str(&m->perm, out_s, 1);
 	arena_temp_end(t);
-	return str_make(p, output.used);
+	return out_s;
 }

@@ -38,6 +38,20 @@ struct str {
 struct str str_make(void *p, usize n);
 #define S(str) (str_make((str), sizeof(str) - 1))
 
+// strbuf.c
+
+struct strbuf {
+	struct str buf;
+	usize used;
+};
+
+void strbuf_init(struct strbuf *sb, struct str buf);
+struct str strbuf_done(struct strbuf *sb);
+
+void strbuf_byte(struct strbuf *sb, u8 b);
+void strbuf_push(struct strbuf *sb, struct str s);
+void strbuf_printf(struct strbuf *sb, char *fmt, ...);
+
 // arena.c
 
 struct arena {
@@ -54,9 +68,7 @@ void alloc_arena(struct arena *a, struct arena *out, usize size);
 void *_alloc_copy(struct arena *a, void *data, usize size, usize align);
 #define alloc_copy(a, t, v, n)                                                 \
 	((t *)_alloc_copy((a), (v), sizeof(t) * (n), alignof(t)))
-void *alloc_copy_str(struct arena *a, struct str from, usize align);
-void *alloc_copy_arena(struct arena *a, struct arena *from);
-void arena_printf(struct arena *a, char *fmt, ...);
+struct str alloc_copy_str(struct arena *a, struct str from, usize align);
 
 struct arena_temp {
 	struct arena *a;

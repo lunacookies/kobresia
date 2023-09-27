@@ -60,19 +60,12 @@ _alloc_copy(struct arena *a, void *data, usize size, usize align)
 	return p;
 }
 
-void *
+struct str
 alloc_copy_str(struct arena *a, struct str from, usize align)
 {
 	u8 *p = alloc_uninit(a, from.n, align);
 	memcpy(p, from.p, from.n);
-	return p;
-}
-
-void *
-alloc_copy_arena(struct arena *a, struct arena *from)
-{
-	struct str used = str_make(from->buf.p, from->used);
-	return alloc_copy_str(a, used, 1);
+	return str_make(p, from.n);
 }
 
 struct arena_temp
@@ -91,17 +84,4 @@ arena_temp_end(struct arena_temp t)
 	assert(t.a->temp_count > 0);
 	t.a->temp_count--;
 	t.a->used = t.used;
-}
-
-void
-arena_printf(struct arena *a, char *fmt, ...)
-{
-	va_list args;
-	va_start(args, fmt);
-	usize remaining = a->buf.n - a->used;
-	usize written = (usize)vsnprintf(
-	        (char *)a->buf.p + a->used, remaining, fmt, args);
-	assert(written < remaining);
-	a->used += written;
-	va_end(args);
 }
