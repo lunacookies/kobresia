@@ -1,20 +1,20 @@
 #include "all.h"
 
 void
-strbuf_init(struct strbuf *sb, struct str buf)
+strbuilder_init(struct strbuilder *sb, struct str buf)
 {
 	sb->buf = buf;
 	sb->used = 0;
 }
 
 struct str
-strbuf_done(struct strbuf *sb)
+strbuilder_done(struct strbuilder *sb)
 {
 	return str_make(sb->buf.p, sb->used);
 }
 
 void
-strbuf_byte(struct strbuf *sb, u8 b)
+strbuilder_byte(struct strbuilder *sb, u8 b)
 {
 	usize remaining = sb->buf.n - sb->used;
 	assert(1 <= remaining);
@@ -23,7 +23,7 @@ strbuf_byte(struct strbuf *sb, u8 b)
 }
 
 void
-strbuf_push(struct strbuf *sb, struct str s)
+strbuilder_push(struct strbuilder *sb, struct str s)
 {
 	usize remaining = sb->buf.n - sb->used;
 	assert(s.n <= remaining);
@@ -32,7 +32,7 @@ strbuf_push(struct strbuf *sb, struct str s)
 }
 
 void
-strbuf_printf(struct strbuf *sb, char *fmt, ...)
+strbuilder_printf(struct strbuilder *sb, char *fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);

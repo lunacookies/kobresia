@@ -10,7 +10,7 @@ enum {
 
 // Dense append-only storage for many strings.
 struct dense {
-	struct strbuf data;
+	struct strbuilder data;
 	u32 *starts;
 	usize count;
 };
@@ -19,12 +19,12 @@ static void
 dense_init(struct dense *d, struct mem *m, usize count, usize elem_len)
 {
 	struct str data_buf = alloc_str(&m->temp, elem_len * count, 1);
-	strbuf_init(&d->data, data_buf);
+	strbuilder_init(&d->data, data_buf);
 	d->starts = alloc(&m->temp, u32, count + 1);
 	d->count = 0;
 }
 
-static struct strbuf *
+static struct strbuilder *
 dense_push(struct dense *d)
 {
 	d->starts[d->count] = cast(u32) d->data.used;
@@ -38,7 +38,7 @@ dense_finish(struct dense *d, struct mem *m, char **data, u32 **starts)
 	d->starts[d->count] = cast(u32) d->data.used;
 
 	// Copy data from temp memory into permanent memory.
-	struct str in_temp = strbuf_done(&d->data);
+	struct str in_temp = strbuilder_done(&d->data);
 	struct str in_perm = alloc_copy_str(&m->perm, in_temp, 1);
 	*data = cast(char *) in_perm.p;
 
@@ -119,14 +119,14 @@ project_search(struct project *p, struct mem *m)
 			struct str file_name = str_make(
 			        file_entry->d_name, file_entry->d_namlen);
 
-			struct strbuf *name = dense_push(&file_names);
-			strbuf_push(name, file_name);
+			struct strbuilder *name = dense_push(&file_names);
+			strbuilder_push(name, file_name);
 
-			struct strbuf *path = dense_push(&file_paths);
-			strbuf_push(path, pkg_name);
-			strbuf_byte(path, '/');
-			strbuf_push(path, file_name);
-			strbuf_byte(path, 0);
+			struct strbuilder *path = dense_push(&file_paths);
+			strbuilder_push(path, pkg_name);
+			strbuilder_byte(path, '/');
+			strbuilder_push(path, file_name);
+			strbuilder_byte(path, 0);
 
 			file_pkgs[file_count] = pkg_count;
 
@@ -139,12 +139,12 @@ project_search(struct project *p, struct mem *m)
 
 		assert(pkg_count < MAX_PKGS);
 
-		struct strbuf *name = dense_push(&pkg_names);
-		strbuf_push(name, pkg_name);
+		struct strbuilder *name = dense_push(&pkg_names);
+		strbuilder_push(name, pkg_name);
 
-		struct strbuf *path = dense_push(&pkg_paths);
-		strbuf_push(path, pkg_name);
-		strbuf_byte(path, 0);
+		struct strbuilder *path = dense_push(&pkg_paths);
+		strbuilder_push(path, pkg_name);
+		strbuilder_byte(path, 0);
 
 		pkg_first_files[pkg_count] = first_file_in_pkg;
 		pkg_file_counts[pkg_count] = files_in_pkg;

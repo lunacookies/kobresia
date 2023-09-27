@@ -40,19 +40,19 @@ struct str {
 struct str str_make(void *p, usize n);
 #define S(str) (str_make((str), sizeof(str) - 1))
 
-// strbuf.c
+// strbuilder.c
 
-struct strbuf {
+struct strbuilder {
 	struct str buf;
 	usize used;
 };
 
-void strbuf_init(struct strbuf *sb, struct str buf);
-struct str strbuf_done(struct strbuf *sb);
+void strbuilder_init(struct strbuilder *sb, struct str buf);
+struct str strbuilder_done(struct strbuilder *sb);
 
-void strbuf_byte(struct strbuf *sb, u8 b);
-void strbuf_push(struct strbuf *sb, struct str s);
-void strbuf_printf(struct strbuf *sb, char *fmt, ...);
+void strbuilder_byte(struct strbuilder *sb, u8 b);
+void strbuilder_push(struct strbuilder *sb, struct str s);
+void strbuilder_printf(struct strbuilder *sb, char *fmt, ...);
 
 // arena.c
 
