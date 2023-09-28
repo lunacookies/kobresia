@@ -32,24 +32,33 @@ os_alloc(usize nbytes)
 	return str_make(p, nbytes);
 }
 
+static void
+push_mem(struct str *block, struct mem *out)
+{
+	usize total = PERM_MEM_SIZE + TEMP_MEM_SIZE;
+	assert(block->n >= total);
+
+	struct str perm_buf = str_make(block->p, PERM_MEM_SIZE);
+	struct str temp_buf = str_make(block->p + PERM_MEM_SIZE, TEMP_MEM_SIZE);
+	*block = str_make(block->p + total, block->n - total);
+
+	arena_init(&out->perm, perm_buf);
+	arena_init(&out->temp, temp_buf);
+}
+
 void
 proc_mem_alloc(struct proc_mem *pm, u32 core_count)
 {
 	assert_zero(pm);
 
 	usize total = (core_count + 1) * (PERM_MEM_SIZE + TEMP_MEM_SIZE);
-	struct arena block;
-	arena_init(&block, os_alloc(total));
+	struct str block = os_alloc(total);
 
-	alloc_arena(&block, &pm->main.perm, PERM_MEM_SIZE);
-	alloc_arena(&block, &pm->main.temp, TEMP_MEM_SIZE);
-
+	push_mem(&block, &pm->main);
 	pm->workers = alloc(&pm->main.perm, struct mem, core_count);
-
 	for (u32 i = 0; i < core_count; i++) {
-		alloc_arena(&block, &pm->workers[i].perm, PERM_MEM_SIZE);
-		alloc_arena(&block, &pm->workers[i].temp, TEMP_MEM_SIZE);
+		push_mem(&block, &pm->workers[i]);
 	}
 
-	assert(block.used == block.buf.n);
+	assert(block.n == 0);
 }

@@ -99,34 +99,6 @@ alloc_str_u(struct arena *a, usize size, usize align)
 	return new;
 }
 
-void
-alloc_arena(struct arena *a, struct arena *out, usize size)
-{
-	usize peak_used = a->peak_used;
-	u8 *p = alloc_uninit(a, size, 1);
-	usize new_used = a->used;
-
-	// Sub-arenas must always be created on memory
-	// which has never been touched before, i.e. is still zeroed from mmap.
-	assert(peak_used <= new_used);
-
-#if DEVELOP
-	// Check the first little bit of sub-arena memory
-	// to make sure we really are on an untouched area of memory.
-
-	usize check_length = 128;
-	if (check_length > size) {
-		check_length = size;
-	}
-
-	for (usize i = 0; i < check_length; i++) {
-		assert(p[i] == 0);
-	}
-#endif
-
-	arena_init(out, str_make(p, size));
-}
-
 void *
 _alloc_copy(struct arena *a, void *data, usize size, usize align)
 {

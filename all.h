@@ -75,8 +75,6 @@ void *_alloc_u(struct arena *a, usize size, usize align);
 struct str alloc_str(struct arena *a, usize size, usize align);
 struct str alloc_str_u(struct arena *a, usize size, usize align);
 
-void alloc_arena(struct arena *a, struct arena *out, usize size);
-
 void *_alloc_copy(struct arena *a, void *data, usize size, usize align);
 #define alloc_copy(a, t, v, n)                                                 \
 	(cast(t *) _alloc_copy((a), (v), sizeof(t) * (n), alignof(t)))
