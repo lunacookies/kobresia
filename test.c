@@ -31,7 +31,7 @@ run_component_tests(struct mem *m, struct str path, test_fn f)
 		usize entry_path_length = path.n + 1 + entry->d_namlen + 1;
 		struct str entry_path =
 		        alloc_str(&m->temp, entry_path_length, 1);
-		struct strbuilder entry_path_builder = { 0 };
+		struct strbuilder entry_path_builder;
 		strbuilder_init(&entry_path_builder, entry_path);
 		strbuilder_push(&entry_path_builder, path);
 		strbuilder_byte(&entry_path_builder, '/');
@@ -43,13 +43,13 @@ run_component_tests(struct mem *m, struct str path, test_fn f)
 		// Next. we read the contents of the file.
 
 		i32 fd = open(cast(char *) entry_path.p, O_RDONLY);
-		struct stat s = { 0 };
+		struct stat s;
 		fstat(fd, &s);
 		usize size = cast(usize) s.st_size;
 
+		// + 1 for null terminator
 		u8 *content = alloc(&m->temp, u8, size + 1);
 		read(fd, content, size);
-		content[size] = '\0';
 
 		// Find where the divider between input source and expect
 		// output is located in the file contents.
