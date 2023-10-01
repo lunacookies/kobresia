@@ -15,15 +15,15 @@
 #include <sys/sysctl.h>
 #include <unistd.h>
 
-typedef int8_t i8;
-typedef int16_t i16;
-typedef int32_t i32;
-typedef int64_t i64;
+typedef int8_t s8;
+typedef int16_t s16;
+typedef int32_t s32;
+typedef int64_t s64;
 typedef uint8_t u8;
 typedef uint16_t u16;
 typedef uint32_t u32;
 typedef uint64_t u64;
-typedef ptrdiff_t imm;
+typedef ptrdiff_t smm;
 typedef size_t umm;
 
 #define KIBIBYTE (1024)
@@ -31,23 +31,23 @@ typedef size_t umm;
 #define GIBIBYTE (1024 * MEBIBYTE)
 
 #define cast(t) (t)
-#define size_of(t) (cast(imm) sizeof(t))
-#define align_of(t) (cast(imm) alignof(t))
+#define size_of(t) (cast(smm) sizeof(t))
+#define align_of(t) (cast(smm) alignof(t))
 
 // base.c
 
 struct str {
 	u8 *p;
-	imm n;
+	smm n;
 };
-struct str str_make(void *p, imm n);
+struct str str_make(void *p, smm n);
 #define S(str) (str_make((str), size_of(str) - 1))
 
 void str_copy(struct str dst, struct str src);
 void str_fill(struct str s, u8 b);
 void str_zero(struct str s);
 
-struct str str_slice(struct str s, imm start, imm end);
+struct str str_slice(struct str s, smm start, smm end);
 
 bool str_equal(struct str s1, struct str s2);
 bool str_all(struct str s, u8 b);
@@ -60,7 +60,7 @@ void _assert_zero(struct str);
 
 struct strbuilder {
 	struct str buf;
-	imm used;
+	smm used;
 };
 
 void strbuilder_init(struct strbuilder *sb, struct str buf);
@@ -74,20 +74,20 @@ void strbuilder_printf(struct strbuilder *sb, char *fmt, ...);
 
 struct arena {
 	struct str buf;
-	imm used, peak_used, temp_count;
+	smm used, peak_used, temp_count;
 };
 
 void arena_init(struct arena *a, struct str buf);
 
-struct str alloc_str(struct arena *a, imm size, imm align);
-struct str alloc_str_u(struct arena *a, imm size, imm align);
+struct str alloc_str(struct arena *a, smm size, smm align);
+struct str alloc_str_u(struct arena *a, smm size, smm align);
 #define alloc(a, t, n)                                                         \
 	(cast(t *) alloc_str((a), size_of(t) * (n), align_of(t)).p)
 #define alloc_u(a, t, n)                                                       \
 	(cast(t *) alloc_str_u((a), size_of(t) * (n), align_of(t)).p)
 
-struct str alloc_copy_str(struct arena *a, struct str src, imm align);
-void *_alloc_copy(struct arena *a, void *data, imm size, imm align);
+struct str alloc_copy_str(struct arena *a, struct str src, smm align);
+void *_alloc_copy(struct arena *a, void *data, smm size, smm align);
 #define alloc_copy(a, t, v, n)                                                 \
 	(cast(t *) alloc_copy_str(                                             \
 	        (a), str_make((v), size_of(t) * (n)), align_of(t))             \
@@ -95,7 +95,7 @@ void *_alloc_copy(struct arena *a, void *data, imm size, imm align);
 
 struct arena_temp {
 	struct arena *a;
-	imm used;
+	smm used;
 };
 
 struct arena_temp arena_temp_begin(struct arena *a);
@@ -117,33 +117,33 @@ struct proc_mem {
 	struct mem *workers;
 };
 
-struct str os_alloc(imm nbytes);
-void proc_mem_alloc(struct proc_mem *pm, imm core_count);
+struct str os_alloc(smm nbytes);
+void proc_mem_alloc(struct proc_mem *pm, smm core_count);
 
 // thread.c
 
-imm core_count(void);
+smm core_count(void);
 
 struct barrier {
 	pthread_cond_t cond;
 	pthread_mutex_t mutex;
-	imm n;
-	imm threads;
+	smm n;
+	smm threads;
 };
 
-void barrier_init(struct barrier *b, imm n);
+void barrier_init(struct barrier *b, smm n);
 void barrier_wait(struct barrier *b);
 
-typedef void (*job)(imm, void *);
+typedef void (*job)(smm, void *);
 struct pool {
 	job *jobs;
 	void **args;
 	struct barrier ready;
 	struct barrier done;
-	imm count;
+	smm count;
 };
 
-struct pool *pool_start(struct mem *m, imm core_count, qos_class_t qos);
+struct pool *pool_start(struct mem *m, smm core_count, qos_class_t qos);
 void pool_sched(struct pool *p, job j, void **args);
 
 // diagnostics.c
@@ -156,8 +156,8 @@ enum severity {
 struct diagnostics_store {
 	enum severity *sev;
 	char *msg;
-	i32 *msglen;
-	imm count;
+	s32 *msglen;
+	smm count;
 };
 
 void diagnostics_store_init(struct diagnostics_store *d, struct mem *m);
@@ -165,29 +165,29 @@ void diagnostics_store_init(struct diagnostics_store *d, struct mem *m);
 // project.c
 
 struct project {
-	imm file_count;
-	imm pkg_count;
+	smm file_count;
+	smm pkg_count;
 
 	char *file_names;
 	char *file_paths;
-	i32 *file_name_starts;
-	i32 *file_path_starts;
-	i32 *file_pkgs;
+	s32 *file_name_starts;
+	s32 *file_path_starts;
+	s32 *file_pkgs;
 
 	char *pkg_names;
 	char *pkg_paths;
-	i32 *pkg_name_starts;
-	i32 *pkg_path_starts;
-	i32 *pkg_first_files;
-	i32 *pkg_file_counts;
+	s32 *pkg_name_starts;
+	s32 *pkg_path_starts;
+	s32 *pkg_first_files;
+	s32 *pkg_file_counts;
 };
 
 void project_search(struct project *p, struct mem *m);
 
-struct str project_file_name(struct project *p, imm id);
-struct str project_file_path(struct project *p, imm id);
-struct str project_pkg_name(struct project *p, imm id);
-struct str project_pkg_path(struct project *p, imm id);
+struct str project_file_name(struct project *p, smm id);
+struct str project_file_path(struct project *p, smm id);
+struct str project_pkg_name(struct project *p, smm id);
+struct str project_pkg_path(struct project *p, smm id);
 
 // lexer.c
 
@@ -198,13 +198,13 @@ enum token_kind {
 };
 
 struct span {
-	i32 start, end;
+	s32 start, end;
 };
 
 struct tokens {
 	enum token_kind *kinds;
 	struct span *spans;
-	imm count;
+	smm count;
 };
 
 struct str token_kind_name(enum token_kind k);

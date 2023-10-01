@@ -28,7 +28,7 @@ run_component_tests(struct mem *m, struct str path, test_fn f)
 
 		// + 1 for slash
 		// + 1 for null terminator
-		imm entry_path_length = path.n + 1 + entry->d_namlen + 1;
+		smm entry_path_length = path.n + 1 + entry->d_namlen + 1;
 		struct str entry_path =
 		        alloc_str(&m->temp, entry_path_length, 1);
 		struct strbuilder entry_path_builder;
@@ -42,10 +42,10 @@ run_component_tests(struct mem *m, struct str path, test_fn f)
 
 		// Next. we read the contents of the file.
 
-		i32 fd = open(cast(char *) entry_path.p, O_RDONLY);
+		s32 fd = open(cast(char *) entry_path.p, O_RDONLY);
 		struct stat s;
 		fstat(fd, &s);
-		imm size = cast(imm) s.st_size;
+		smm size = cast(smm) s.st_size;
 
 		// + 1 for null terminator
 		struct str content = alloc_str(&m->temp, size + 1, 1);
@@ -59,11 +59,11 @@ run_component_tests(struct mem *m, struct str path, test_fn f)
 		        strstr(cast(char *) content.p, cast(char *) DIVIDER.p);
 		if (divider_p == NULL) {
 			fprintf(stderr, "test %.*s has no divider.\n",
-			        cast(i32) entry_path.n, entry_path.p);
+			        cast(s32) entry_path.n, entry_path.p);
 			continue;
 		}
 
-		imm divider_pos = cast(imm)(divider_p - content.p);
+		smm divider_pos = cast(smm)(divider_p - content.p);
 		struct str input = str_slice(content, 0, divider_pos);
 		struct str expect_output =
 		        str_slice(content, divider_pos + DIVIDER.n, content.n);
@@ -71,17 +71,17 @@ run_component_tests(struct mem *m, struct str path, test_fn f)
 		struct str actual_output = f(m, input);
 
 		if (str_equal(expect_output, actual_output)) {
-			printf("*** pass - %.*s\n", cast(i32) entry_path.n,
+			printf("*** pass - %.*s\n", cast(s32) entry_path.n,
 			        entry_path.p);
 			continue;
 		}
 
-		printf("*** fail - %.*s\n", cast(i32) entry_path.n,
+		printf("*** fail - %.*s\n", cast(s32) entry_path.n,
 		        entry_path.p);
 		printf("expect (%td):\n%.*s\n", expect_output.n,
-		        cast(i32) expect_output.n, expect_output.p);
+		        cast(s32) expect_output.n, expect_output.p);
 		printf("actual (%td):\n%.*s\n", actual_output.n,
-		        cast(i32) actual_output.n, actual_output.p);
+		        cast(s32) actual_output.n, actual_output.p);
 
 		arena_temp_end(t);
 	}

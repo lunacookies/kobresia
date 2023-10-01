@@ -1,7 +1,7 @@
 #include "all.h"
 
 struct str
-str_make(void *p, imm n)
+str_make(void *p, smm n)
 {
 	assert(n >= 0);
 	struct str s;
@@ -30,7 +30,7 @@ str_zero(struct str s)
 }
 
 struct str
-str_slice(struct str s, imm start, imm end)
+str_slice(struct str s, smm start, smm end)
 {
 	assert(start >= 0 && start <= s.n);
 	assert(end >= 0 && end <= s.n);
@@ -69,7 +69,7 @@ void
 _assert_zero(struct str s)
 {
 	u8 *p = cast(u8 *) s.p;
-	for (imm i = 0; i < s.n; i++) {
+	for (smm i = 0; i < s.n; i++) {
 		assert(p[i] == 0);
 	}
 }

@@ -47,10 +47,10 @@ lex(struct tokens *t, struct mem *m, struct str input)
 	// the maximum number of tokens is one per byte of input
 	enum token_kind *kinds = alloc_u(&m->temp, enum token_kind, input.n);
 	struct span *spans = alloc_u(&m->temp, struct span, input.n);
-	imm count = 0;
+	smm count = 0;
 
 	char *inp = cast(char *) input.p;
-	imm i = 0;
+	smm i = 0;
 	while (i < input.n) {
 		if (whitespace(inp[i])) {
 			while (i < input.n && whitespace(inp[i])) {
@@ -60,7 +60,7 @@ lex(struct tokens *t, struct mem *m, struct str input)
 		}
 
 		if (ident_start(inp[i])) {
-			imm start = i;
+			smm start = i;
 			while (i < input.n && ident_follow(inp[i])) {
 				i++;
 			}
@@ -68,15 +68,15 @@ lex(struct tokens *t, struct mem *m, struct str input)
 			kinds[count] = T_IDENT;
 
 			zero_out(&spans[count]);
-			spans[count].start = cast(i32) start;
-			spans[count].end = cast(i32) i;
+			spans[count].start = cast(s32) start;
+			spans[count].end = cast(s32) i;
 
 			count++;
 			continue;
 		}
 
 		if (number(inp[i])) {
-			imm start = i;
+			smm start = i;
 			while (i < input.n && number(inp[i])) {
 				i++;
 			}
@@ -84,8 +84,8 @@ lex(struct tokens *t, struct mem *m, struct str input)
 			kinds[count] = T_NUMBER;
 
 			zero_out(&spans[count]);
-			spans[count].start = cast(i32) start;
-			spans[count].end = cast(i32) i;
+			spans[count].start = cast(s32) start;
+			spans[count].end = cast(s32) i;
 
 			count++;
 			continue;
@@ -94,8 +94,8 @@ lex(struct tokens *t, struct mem *m, struct str input)
 		kinds[count] = T_INVALID;
 
 		zero_out(&spans[count]);
-		spans[count].start = cast(i32) i;
-		spans[count].end = cast(i32)(i + 1);
+		spans[count].start = cast(s32) i;
+		spans[count].end = cast(s32)(i + 1);
 
 		i++;
 		count++;
@@ -119,11 +119,11 @@ lex_test(struct mem *m, struct str input)
 	struct strbuilder out;
 	strbuilder_init(&out, alloc_str_u(&m->temp, 16 * KIBIBYTE, 1));
 
-	for (imm i = 0; i < toks.count; i++) {
+	for (smm i = 0; i < toks.count; i++) {
 		enum token_kind kind = toks.kinds[i];
 		struct span span = toks.spans[i];
 		struct str name = token_kind_name(kind);
-		strbuilder_printf(&out, "%.*s@%d..%d\n", cast(i32) name.n,
+		strbuilder_printf(&out, "%.*s@%d..%d\n", cast(s32) name.n,
 		        name.p, span.start, span.end);
 	}
 

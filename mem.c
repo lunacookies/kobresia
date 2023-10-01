@@ -5,20 +5,20 @@ enum {
 	TEMP_SIZE = 100 * MEBIBYTE,
 };
 
-static imm
+static smm
 page_size(void)
 {
-	i32 s = getpagesize();
+	s32 s = getpagesize();
 
 	if (s == -1) {
 		early_death(S("failed to get page size"));
 	}
 
-	return cast(imm) s;
+	return cast(smm) s;
 }
 
 struct str
-os_alloc(imm nbytes)
+os_alloc(smm nbytes)
 {
 	assert(nbytes > 0);
 	assert(nbytes % page_size() == 0);
@@ -46,17 +46,17 @@ push_mem(struct str *block, struct mem *out)
 }
 
 void
-proc_mem_alloc(struct proc_mem *pm, imm core_count)
+proc_mem_alloc(struct proc_mem *pm, smm core_count)
 {
 	assert_zero(pm);
 	assert(core_count > 0);
 
-	imm total = (core_count + 1) * (PERM_SIZE + TEMP_SIZE);
+	smm total = (core_count + 1) * (PERM_SIZE + TEMP_SIZE);
 	struct str block = os_alloc(total);
 
 	push_mem(&block, &pm->main);
 	pm->workers = alloc(&pm->main.perm, struct mem, core_count);
-	for (imm i = 0; i < core_count; i++) {
+	for (smm i = 0; i < core_count; i++) {
 		push_mem(&block, &pm->workers[i]);
 	}
 
