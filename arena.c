@@ -53,7 +53,8 @@ alloc_str(struct arena *a, usize size, usize align)
 		// In this case a portion of the allocation is reused memory,
 		// so we zero out the reused portion.
 		assert(peak_used > allocation_start);
-		struct str reused = str_prefix(s, peak_used - allocation_start);
+		struct str reused =
+		        str_slice(s, 0, peak_used - allocation_start);
 #if DEVELOP
 		assert(str_all(s, REUSED_SENTINEL)); // FIXME
 #endif

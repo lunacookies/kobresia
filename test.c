@@ -50,7 +50,7 @@ run_component_tests(struct mem *m, struct str path, test_fn f)
 		// + 1 for null terminator
 		struct str content = alloc_str(&m->temp, size + 1, 1);
 		read(fd, content.p, size);
-		content = str_prefix(content, size); // cut off the null
+		content = str_slice(content, 0, size); // cut off the null
 
 		// Find where the divider between input source and expect
 		// output is located in the file contents.
@@ -64,9 +64,9 @@ run_component_tests(struct mem *m, struct str path, test_fn f)
 		}
 
 		usize divider_pos = cast(usize)(divider_p - content.p);
-		struct str input = str_prefix(content, divider_pos);
+		struct str input = str_slice(content, 0, divider_pos);
 		struct str expect_output =
-		        str_suffix(content, divider_pos + DIVIDER.n);
+		        str_slice(content, divider_pos + DIVIDER.n, content.n);
 
 		struct str actual_output = f(m, input);
 

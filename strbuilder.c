@@ -10,13 +10,13 @@ strbuilder_init(struct strbuilder *sb, struct str buf)
 struct str
 strbuilder_done(struct strbuilder *sb)
 {
-	return str_prefix(sb->buf, sb->used);
+	return str_slice(sb->buf, 0, sb->used);
 }
 
 static struct str
 strbuilder_remaining(struct strbuilder *sb)
 {
-	return str_suffix(sb->buf, sb->used);
+	return str_slice(sb->buf, sb->used, sb->buf.n);
 }
 
 void
@@ -32,7 +32,7 @@ void
 strbuilder_push(struct strbuilder *sb, struct str s)
 {
 	struct str remaining = strbuilder_remaining(sb);
-	str_copy(str_prefix(remaining, s.n), s);
+	str_copy(str_slice(remaining, 0, s.n), s);
 	sb->used += s.n;
 }
 

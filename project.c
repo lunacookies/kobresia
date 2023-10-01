@@ -103,8 +103,8 @@ project_search(struct project *p, struct mem *m)
 			        file_entry->d_name, file_entry->d_namlen);
 
 			struct str expected_ext = S(".kb");
-			struct str actual_ext =
-			        str_suffix(file_name, file_name.n - 3);
+			struct str actual_ext = str_slice(
+			        file_name, file_name.n - 3, file_name.n);
 
 			if (!str_equal(expected_ext, actual_ext)) {
 				continue;

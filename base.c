@@ -29,20 +29,6 @@ str_zero(struct str s)
 }
 
 struct str
-str_prefix(struct str s, usize i)
-{
-	assert(i <= s.n);
-	return str_make(s.p, i);
-}
-
-struct str
-str_suffix(struct str s, usize i)
-{
-	assert(i <= s.n);
-	return str_make(s.p + i, s.n - i);
-}
-
-struct str
 str_slice(struct str s, usize start, usize end)
 {
 	assert(start <= s.n);

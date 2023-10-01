@@ -36,9 +36,9 @@ static void
 push_mem(struct str *block, struct mem *out)
 {
 	struct str b = *block;
-	struct str perm_buf = str_prefix(b, PERM_SIZE);
+	struct str perm_buf = str_slice(b, 0, PERM_SIZE);
 	struct str temp_buf = str_slice(b, PERM_SIZE, PERM_SIZE + TEMP_SIZE);
-	*block = str_suffix(b, PERM_SIZE + TEMP_SIZE);
+	*block = str_slice(b, PERM_SIZE + TEMP_SIZE, b.n);
 
 	arena_init(&out->perm, perm_buf);
 	arena_init(&out->temp, temp_buf);

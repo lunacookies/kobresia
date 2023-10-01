@@ -44,8 +44,6 @@ void str_copy(struct str dst, struct str src);
 void str_fill(struct str s, u8 b);
 void str_zero(struct str s);
 
-struct str str_prefix(struct str s, usize i);
-struct str str_suffix(struct str s, usize i);
 struct str str_slice(struct str s, usize start, usize end);
 
 bool str_equal(struct str s1, struct str s2);
