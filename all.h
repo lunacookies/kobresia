@@ -30,6 +30,8 @@ typedef size_t usize;
 #define GIBIBYTE (1024 * MEBIBYTE)
 
 #define cast(t) (t)
+#define size_of(t) (sizeof(t))
+#define align_of(t) (alignof(t))
 
 // base.c
 
@@ -38,7 +40,7 @@ struct str {
 	usize n;
 };
 struct str str_make(void *p, usize n);
-#define S(str) (str_make((str), sizeof(str) - 1))
+#define S(str) (str_make((str), size_of(str) - 1))
 
 void str_copy(struct str dst, struct str src);
 void str_fill(struct str s, u8 b);
@@ -50,8 +52,8 @@ bool str_equal(struct str s1, struct str s2);
 bool str_all(struct str s, u8 b);
 
 void _assert_zero(struct str);
-#define assert_zero(p) (_assert_zero(str_make((p), sizeof(*(p)))))
-#define zero_out(p) (str_zero(str_make((p), sizeof(*(p)))))
+#define assert_zero(p) (_assert_zero(str_make((p), size_of(*(p)))))
+#define zero_out(p) (str_zero(str_make((p), size_of(*(p)))))
 
 // strbuilder.c
 
@@ -78,15 +80,16 @@ void arena_init(struct arena *a, struct str buf);
 
 struct str alloc_str(struct arena *a, usize size, usize align);
 struct str alloc_str_u(struct arena *a, usize size, usize align);
-#define alloc(a, t, n) (cast(t *) alloc_str((a), sizeof(t) * (n), alignof(t)).p)
+#define alloc(a, t, n)                                                         \
+	(cast(t *) alloc_str((a), size_of(t) * (n), align_of(t)).p)
 #define alloc_u(a, t, n)                                                       \
-	(cast(t *) alloc_str_u((a), sizeof(t) * (n), alignof(t)).p)
+	(cast(t *) alloc_str_u((a), size_of(t) * (n), align_of(t)).p)
 
 struct str alloc_copy_str(struct arena *a, struct str src, usize align);
 void *_alloc_copy(struct arena *a, void *data, usize size, usize align);
 #define alloc_copy(a, t, v, n)                                                 \
 	(cast(t *) alloc_copy_str(                                             \
-	        (a), str_make((v), sizeof(t) * (n)), alignof(t))               \
+	        (a), str_make((v), size_of(t) * (n)), align_of(t))             \
 	                .p)
 
 struct arena_temp {
