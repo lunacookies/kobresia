@@ -50,7 +50,7 @@ lex(struct tokens *t, struct mem *m, struct str input)
 	imm count = 0;
 
 	char *inp = cast(char *) input.p;
-	u32 i = 0;
+	imm i = 0;
 	while (i < input.n) {
 		if (whitespace(inp[i])) {
 			while (i < input.n && whitespace(inp[i])) {
@@ -60,7 +60,7 @@ lex(struct tokens *t, struct mem *m, struct str input)
 		}
 
 		if (ident_start(inp[i])) {
-			u32 start = i;
+			imm start = i;
 			while (i < input.n && ident_follow(inp[i])) {
 				i++;
 			}
@@ -68,15 +68,15 @@ lex(struct tokens *t, struct mem *m, struct str input)
 			kinds[count] = T_IDENT;
 
 			zero_out(&spans[count]);
-			spans[count].start = start;
-			spans[count].end = i;
+			spans[count].start = cast(i32) start;
+			spans[count].end = cast(i32) i;
 
 			count++;
 			continue;
 		}
 
 		if (number(inp[i])) {
-			u32 start = i;
+			imm start = i;
 			while (i < input.n && number(inp[i])) {
 				i++;
 			}
@@ -84,8 +84,8 @@ lex(struct tokens *t, struct mem *m, struct str input)
 			kinds[count] = T_NUMBER;
 
 			zero_out(&spans[count]);
-			spans[count].start = start;
-			spans[count].end = i;
+			spans[count].start = cast(i32) start;
+			spans[count].end = cast(i32) i;
 
 			count++;
 			continue;
@@ -94,8 +94,8 @@ lex(struct tokens *t, struct mem *m, struct str input)
 		kinds[count] = T_INVALID;
 
 		zero_out(&spans[count]);
-		spans[count].start = i;
-		spans[count].end = i + 1;
+		spans[count].start = cast(i32) i;
+		spans[count].end = cast(i32)(i + 1);
 
 		i++;
 		count++;

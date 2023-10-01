@@ -1,19 +1,19 @@
 #include "all.h"
 
-u32
+imm
 core_count(void)
 {
-	u32 value;
-	umm size = cast(umm) size_of(u32);
+	i32 value;
+	umm size = cast(umm) size_of(i32);
 	i32 code = sysctlbyname("hw.logicalcpu_max", &value, &size, NULL, 0);
 	assert(code == 0);
-	assert(size == cast(umm) size_of(u32));
+	assert(size == cast(umm) size_of(i32));
 	assert(value > 0);
 	return value;
 }
 
 void
-barrier_init(struct barrier *b, u32 n)
+barrier_init(struct barrier *b, imm n)
 {
 	assert_zero(b);
 
@@ -53,7 +53,7 @@ barrier_wait(struct barrier *b)
 }
 
 struct worker_args {
-	u32 i;
+	imm i;
 	struct pool *p;
 };
 
@@ -61,7 +61,7 @@ static void *
 worker(void *a)
 {
 	struct worker_args *args = cast(struct worker_args *) a;
-	u32 i = args->i;
+	imm i = args->i;
 	struct pool *p = args->p;
 
 	while (true) {
@@ -82,8 +82,9 @@ worker(void *a)
 }
 
 struct pool *
-pool_start(struct mem *m, u32 core_count, qos_class_t qos)
+pool_start(struct mem *m, imm core_count, qos_class_t qos)
 {
+	assert(core_count > 0);
 	struct pool *p = alloc(&m->perm, struct pool, 1);
 
 	p->jobs = alloc(&m->perm, job, core_count);
@@ -95,7 +96,7 @@ pool_start(struct mem *m, u32 core_count, qos_class_t qos)
 
 	p->count = core_count;
 
-	for (u32 i = 0; i < core_count; i++) {
+	for (imm i = 0; i < core_count; i++) {
 		struct worker_args *args =
 		        alloc(&m->perm, struct worker_args, 1);
 		args->i = i;
@@ -117,7 +118,7 @@ pool_start(struct mem *m, u32 core_count, qos_class_t qos)
 void
 pool_sched(struct pool *p, job j, void **args)
 {
-	for (u32 i = 0; i < p->count; i++) {
+	for (imm i = 0; i < p->count; i++) {
 		void *arg = args[i];
 
 		assert(p->jobs[i] == NULL);

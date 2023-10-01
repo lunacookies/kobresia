@@ -46,16 +46,17 @@ push_mem(struct str *block, struct mem *out)
 }
 
 void
-proc_mem_alloc(struct proc_mem *pm, u32 core_count)
+proc_mem_alloc(struct proc_mem *pm, imm core_count)
 {
 	assert_zero(pm);
+	assert(core_count > 0);
 
 	imm total = (core_count + 1) * (PERM_SIZE + TEMP_SIZE);
 	struct str block = os_alloc(total);
 
 	push_mem(&block, &pm->main);
 	pm->workers = alloc(&pm->main.perm, struct mem, core_count);
-	for (u32 i = 0; i < core_count; i++) {
+	for (imm i = 0; i < core_count; i++) {
 		push_mem(&block, &pm->workers[i]);
 	}
 

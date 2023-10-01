@@ -78,9 +78,9 @@ run_component_tests(struct mem *m, struct str path, test_fn f)
 
 		printf("*** fail - %.*s\n", cast(int) entry_path.n,
 		        entry_path.p);
-		printf("expect (%zu):\n%.*s\n", expect_output.n,
+		printf("expect (%td):\n%.*s\n", expect_output.n,
 		        cast(int) expect_output.n, expect_output.p);
-		printf("actual (%zu):\n%.*s\n", actual_output.n,
+		printf("actual (%td):\n%.*s\n", actual_output.n,
 		        cast(int) actual_output.n, actual_output.p);
 
 		arena_temp_end(t);

@@ -118,32 +118,32 @@ struct proc_mem {
 };
 
 struct str os_alloc(imm nbytes);
-void proc_mem_alloc(struct proc_mem *pm, u32 core_count);
+void proc_mem_alloc(struct proc_mem *pm, imm core_count);
 
 // thread.c
 
-u32 core_count(void);
+imm core_count(void);
 
 struct barrier {
 	pthread_cond_t cond;
 	pthread_mutex_t mutex;
-	u32 n;
-	u32 threads;
+	imm n;
+	imm threads;
 };
 
-void barrier_init(struct barrier *b, u32 n);
+void barrier_init(struct barrier *b, imm n);
 void barrier_wait(struct barrier *b);
 
-typedef void (*job)(u32, void *);
+typedef void (*job)(imm, void *);
 struct pool {
 	job *jobs;
 	void **args;
 	struct barrier ready;
 	struct barrier done;
-	u32 count;
+	imm count;
 };
 
-struct pool *pool_start(struct mem *m, u32 core_count, qos_class_t qos);
+struct pool *pool_start(struct mem *m, imm core_count, qos_class_t qos);
 void pool_sched(struct pool *p, job j, void **args);
 
 // diagnostics.c
@@ -156,7 +156,7 @@ enum severity {
 struct diagnostics_store {
 	enum severity *sev;
 	char *msg;
-	u32 *msglen;
+	i32 *msglen;
 	imm count;
 };
 
@@ -165,29 +165,29 @@ void diagnostics_store_init(struct diagnostics_store *d, struct mem *m);
 // project.c
 
 struct project {
-	u32 file_count;
-	u32 pkg_count;
+	imm file_count;
+	imm pkg_count;
 
 	char *file_names;
 	char *file_paths;
-	u32 *file_name_starts;
-	u32 *file_path_starts;
-	u32 *file_pkgs;
+	i32 *file_name_starts;
+	i32 *file_path_starts;
+	i32 *file_pkgs;
 
 	char *pkg_names;
 	char *pkg_paths;
-	u32 *pkg_name_starts;
-	u32 *pkg_path_starts;
-	u32 *pkg_first_files;
-	u32 *pkg_file_counts;
+	i32 *pkg_name_starts;
+	i32 *pkg_path_starts;
+	i32 *pkg_first_files;
+	i32 *pkg_file_counts;
 };
 
 void project_search(struct project *p, struct mem *m);
 
-struct str project_file_name(struct project *p, u32 id);
-struct str project_file_path(struct project *p, u32 id);
-struct str project_pkg_name(struct project *p, u32 id);
-struct str project_pkg_path(struct project *p, u32 id);
+struct str project_file_name(struct project *p, imm id);
+struct str project_file_path(struct project *p, imm id);
+struct str project_pkg_name(struct project *p, imm id);
+struct str project_pkg_path(struct project *p, imm id);
 
 // lexer.c
 
@@ -198,7 +198,7 @@ enum token_kind {
 };
 
 struct span {
-	u32 start, end;
+	i32 start, end;
 };
 
 struct tokens {

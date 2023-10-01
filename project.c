@@ -11,7 +11,7 @@ enum {
 // Dense append-only storage for many strings.
 struct dense {
 	struct strbuilder data;
-	u32 *starts;
+	i32 *starts;
 	imm count;
 };
 
@@ -24,28 +24,28 @@ dense_init(struct dense *d, struct mem *m, imm count, imm elem_len)
 
 	struct str data_buf = alloc_str_u(&m->temp, elem_len * count, 1);
 	strbuilder_init(&d->data, data_buf);
-	d->starts = alloc_u(&m->temp, u32, count + 1);
+	d->starts = alloc_u(&m->temp, i32, count + 1);
 }
 
 static struct strbuilder *
 dense_push(struct dense *d)
 {
-	d->starts[d->count] = cast(u32) d->data.used;
+	d->starts[d->count] = cast(i32) d->data.used;
 	d->count++;
 	return &d->data;
 }
 
 static void
-dense_finish(struct dense *d, struct mem *m, char **data, u32 **starts)
+dense_finish(struct dense *d, struct mem *m, char **data, i32 **starts)
 {
-	d->starts[d->count] = cast(u32) d->data.used;
+	d->starts[d->count] = cast(i32) d->data.used;
 
 	// Copy data from temp memory into permanent memory.
 	struct str in_temp = strbuilder_done(&d->data);
 	struct str in_perm = alloc_copy_str(&m->perm, in_temp, 1);
 	*data = cast(char *) in_perm.p;
 
-	*starts = alloc_copy(&m->perm, u32, d->starts, d->count + 1);
+	*starts = alloc_copy(&m->perm, i32, d->starts, d->count + 1);
 }
 
 void
@@ -61,13 +61,13 @@ project_search(struct project *p, struct mem *m)
 	dense_init(&pkg_names, m, MAX_PKGS, NAME_LEN);
 	dense_init(&pkg_paths, m, MAX_PKGS, PATH_LEN);
 
-	u32 *file_pkgs = alloc_u(&m->temp, u32, MAX_FILES);
+	i32 *file_pkgs = alloc_u(&m->temp, i32, MAX_FILES);
 
-	u32 *pkg_first_files = alloc_u(&m->temp, u32, MAX_PKGS);
-	u32 *pkg_file_counts = alloc_u(&m->temp, u32, MAX_PKGS);
+	i32 *pkg_first_files = alloc_u(&m->temp, i32, MAX_PKGS);
+	i32 *pkg_file_counts = alloc_u(&m->temp, i32, MAX_PKGS);
 
-	u32 file_count = 0;
-	u32 pkg_count = 0;
+	imm file_count = 0;
+	imm pkg_count = 0;
 
 	DIR *root = opendir(".");
 
@@ -85,8 +85,8 @@ project_search(struct project *p, struct mem *m)
 		        str_make(pkg_entry->d_name, pkg_entry->d_namlen);
 
 		DIR *pkg = opendir(pkg_entry->d_name);
-		u32 first_file_in_pkg = 0;
-		u32 files_in_pkg = 0;
+		imm first_file_in_pkg = 0;
+		imm files_in_pkg = 0;
 
 		while (true) {
 			struct dirent *file_entry = readdir(pkg);
@@ -129,7 +129,7 @@ project_search(struct project *p, struct mem *m)
 			strbuilder_push(path, file_name);
 			strbuilder_byte(path, 0);
 
-			file_pkgs[file_count] = pkg_count;
+			file_pkgs[file_count] = cast(i32) pkg_count;
 
 			file_count++;
 		}
@@ -147,8 +147,8 @@ project_search(struct project *p, struct mem *m)
 		strbuilder_push(path, pkg_name);
 		strbuilder_byte(path, 0);
 
-		pkg_first_files[pkg_count] = first_file_in_pkg;
-		pkg_file_counts[pkg_count] = files_in_pkg;
+		pkg_first_files[pkg_count] = cast(i32) first_file_in_pkg;
+		pkg_file_counts[pkg_count] = cast(i32) files_in_pkg;
 
 		pkg_count++;
 	}
@@ -161,52 +161,58 @@ project_search(struct project *p, struct mem *m)
 	p->file_count = file_count;
 	p->pkg_count = pkg_count;
 
-	p->file_pkgs = alloc_copy(&m->perm, u32, file_pkgs, file_count);
+	p->file_pkgs = alloc_copy(&m->perm, i32, file_pkgs, file_count);
 
 	p->pkg_first_files =
-	        alloc_copy(&m->perm, u32, pkg_first_files, pkg_count);
+	        alloc_copy(&m->perm, i32, pkg_first_files, pkg_count);
 	p->pkg_file_counts =
-	        alloc_copy(&m->perm, u32, pkg_file_counts, pkg_count);
+	        alloc_copy(&m->perm, i32, pkg_file_counts, pkg_count);
 
 	arena_temp_end(t);
 }
 
 struct str
-project_file_name(struct project *p, u32 id)
+project_file_name(struct project *p, imm id)
 {
 	assert(id < p->file_count);
-	u32 start = p->file_name_starts[id];
-	u32 end = p->file_name_starts[id + 1];
-	u32 length = end - start;
+	imm start = cast(imm) p->file_name_starts[id];
+	imm end = cast(imm) p->file_name_starts[id + 1];
+	assert(end >= start);
+	imm length = end - start;
 	return str_make(&p->file_names[start], length);
 }
 
 struct str
-project_file_path(struct project *p, u32 id)
+project_file_path(struct project *p, imm id)
 {
 	assert(id < p->file_count);
-	u32 start = p->file_path_starts[id];
-	u32 end = p->file_path_starts[id + 1] - 1; // remove null terminator
-	u32 length = end - start;
+	imm start = cast(imm) p->file_path_starts[id];
+	imm end = cast(imm) p->file_path_starts[id + 1] -
+	          1; // remove null terminator
+	assert(end >= start);
+	imm length = end - start;
 	return str_make(&p->file_paths[start], length);
 }
 
 struct str
-project_pkg_name(struct project *p, u32 id)
+project_pkg_name(struct project *p, imm id)
 {
 	assert(id < p->pkg_count);
-	u32 start = p->pkg_name_starts[id];
-	u32 end = p->pkg_name_starts[id + 1];
-	u32 length = end - start;
+	imm start = cast(imm) p->pkg_name_starts[id];
+	imm end = cast(imm) p->pkg_name_starts[id + 1];
+	assert(end >= start);
+	imm length = end - start;
 	return str_make(&p->pkg_names[start], length);
 }
 
 struct str
-project_pkg_path(struct project *p, u32 id)
+project_pkg_path(struct project *p, imm id)
 {
 	assert(id < p->pkg_count);
-	u32 start = p->pkg_path_starts[id];
-	u32 end = p->pkg_path_starts[id + 1] - 1; // remove null terminator
-	u32 length = end - start;
+	imm start = cast(imm) p->pkg_path_starts[id];
+	imm end = cast(imm) p->pkg_path_starts[id + 1] -
+	          1; // remove null terminator
+	assert(end >= start);
+	imm length = end - start;
 	return str_make(&p->pkg_paths[start], length);
 }
