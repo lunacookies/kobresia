@@ -123,7 +123,7 @@ lex_test(struct mem *m, struct str input)
 		enum token_kind kind = toks.kinds[i];
 		struct span span = toks.spans[i];
 		struct str name = token_kind_name(kind);
-		strbuilder_printf(&out, "%.*s@%d..%d\n", cast(int) name.n,
+		strbuilder_printf(&out, "%.*s@%d..%d\n", cast(i32) name.n,
 		        name.p, span.start, span.end);
 	}
 

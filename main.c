@@ -13,8 +13,8 @@ work(imm i, void *arg)
 	printf("[%td] done\n", i);
 }
 
-int
-main(int argc, char **argv)
+i32
+main(i32 argc, char **argv)
 {
 	imm c = core_count();
 	struct proc_mem pm;
@@ -42,8 +42,8 @@ main(int argc, char **argv)
 
 		printf("\n");
 		printf("id:   %td\n", pkg_id);
-		printf("name: (%td) %.*s\n", name.n, cast(int) name.n, name.p);
-		printf("path: (%td) %.*s\n", path.n, cast(int) path.n, path.p);
+		printf("name: (%td) %.*s\n", name.n, cast(i32) name.n, name.p);
+		printf("path: (%td) %.*s\n", path.n, cast(i32) path.n, path.p);
 
 		imm file_count = proj.pkg_file_counts[pkg_id];
 		imm first_file = proj.pkg_first_files[pkg_id];
@@ -59,9 +59,9 @@ main(int argc, char **argv)
 			printf("\tid:   %td\n", file_id);
 			printf("\tpkg:  %d\n", proj.file_pkgs[file_id]);
 			printf("\tname: (%td) %.*s\n", file_name.n,
-			        cast(int) file_name.n, file_name.p);
+			        cast(i32) file_name.n, file_name.p);
 			printf("\tpath: (%td) %.*s\n", file_path.n,
-			        cast(int) file_path.n, file_path.p);
+			        cast(i32) file_path.n, file_path.p);
 		}
 	}
 

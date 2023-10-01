@@ -59,7 +59,7 @@ run_component_tests(struct mem *m, struct str path, test_fn f)
 		        strstr(cast(char *) content.p, cast(char *) DIVIDER.p);
 		if (divider_p == NULL) {
 			fprintf(stderr, "test %.*s has no divider.\n",
-			        cast(int) entry_path.n, entry_path.p);
+			        cast(i32) entry_path.n, entry_path.p);
 			continue;
 		}
 
@@ -71,17 +71,17 @@ run_component_tests(struct mem *m, struct str path, test_fn f)
 		struct str actual_output = f(m, input);
 
 		if (str_equal(expect_output, actual_output)) {
-			printf("*** pass - %.*s\n", cast(int) entry_path.n,
+			printf("*** pass - %.*s\n", cast(i32) entry_path.n,
 			        entry_path.p);
 			continue;
 		}
 
-		printf("*** fail - %.*s\n", cast(int) entry_path.n,
+		printf("*** fail - %.*s\n", cast(i32) entry_path.n,
 		        entry_path.p);
 		printf("expect (%td):\n%.*s\n", expect_output.n,
-		        cast(int) expect_output.n, expect_output.p);
+		        cast(i32) expect_output.n, expect_output.p);
 		printf("actual (%td):\n%.*s\n", actual_output.n,
-		        cast(int) actual_output.n, actual_output.p);
+		        cast(i32) actual_output.n, actual_output.p);
 
 		arena_temp_end(t);
 	}
