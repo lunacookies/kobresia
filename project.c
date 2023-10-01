@@ -99,11 +99,14 @@ project_search(struct project *p, struct mem *m)
 				continue;
 			}
 
-			char expected_ext[3] = ".kb";
-			char *actual_ext =
-			        file_entry->d_name + file_entry->d_namlen - 3;
+			struct str file_name = str_make(
+			        file_entry->d_name, file_entry->d_namlen);
 
-			if (memcmp(expected_ext, actual_ext, 3) != 0) {
+			struct str expected_ext = S(".kb");
+			struct str actual_ext =
+			        str_suffix(file_name, file_name.n - 3);
+
+			if (!str_equal(expected_ext, actual_ext)) {
 				continue;
 			}
 
@@ -113,9 +116,6 @@ project_search(struct project *p, struct mem *m)
 			files_in_pkg++;
 
 			assert(file_count < MAX_FILES);
-
-			struct str file_name = str_make(
-			        file_entry->d_name, file_entry->d_namlen);
 
 			struct strbuilder *name = dense_push(&file_names);
 			strbuilder_push(name, file_name);

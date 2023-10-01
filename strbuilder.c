@@ -10,24 +10,29 @@ strbuilder_init(struct strbuilder *sb, struct str buf)
 struct str
 strbuilder_done(struct strbuilder *sb)
 {
-	return str_make(sb->buf.p, sb->used);
+	return str_prefix(sb->buf, sb->used);
+}
+
+static struct str
+strbuilder_remaining(struct strbuilder *sb)
+{
+	return str_suffix(sb->buf, sb->used);
 }
 
 void
 strbuilder_byte(struct strbuilder *sb, u8 b)
 {
-	usize remaining = sb->buf.n - sb->used;
-	assert(1 <= remaining);
-	sb->buf.p[sb->used] = b;
+	struct str remaining = strbuilder_remaining(sb);
+	assert(remaining.n >= 1);
+	remaining.p[0] = b;
 	sb->used++;
 }
 
 void
 strbuilder_push(struct strbuilder *sb, struct str s)
 {
-	usize remaining = sb->buf.n - sb->used;
-	assert(s.n <= remaining);
-	memcpy(sb->buf.p + sb->used, s.p, s.n);
+	struct str remaining = strbuilder_remaining(sb);
+	str_copy(str_prefix(remaining, s.n), s);
 	sb->used += s.n;
 }
 
@@ -37,13 +42,13 @@ strbuilder_printf(struct strbuilder *sb, char *fmt, ...)
 	va_list args;
 	va_start(args, fmt);
 
-	usize remaining = sb->buf.n - sb->used;
+	struct str remaining = strbuilder_remaining(sb);
 
 	// vsnprintf returns the number of bytes it would have written,
 	// were the buffer we pass it of unlimited size.
-	usize len = cast(usize) vsnprintf(
-	        cast(char *) sb->buf.p + sb->used, remaining, fmt, args);
-	assert(len <= remaining);
+	usize len = cast(usize)
+	        vsnprintf(cast(char *) remaining.p, remaining.n, fmt, args);
+	assert(len <= remaining.n);
 	sb->used += len;
 
 	va_end(args);

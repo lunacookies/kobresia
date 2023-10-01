@@ -40,9 +40,20 @@ struct str {
 struct str str_make(void *p, usize n);
 #define S(str) (str_make((str), sizeof(str) - 1))
 
+void str_copy(struct str dst, struct str src);
+void str_fill(struct str s, u8 b);
+void str_zero(struct str s);
+
+struct str str_prefix(struct str s, usize i);
+struct str str_suffix(struct str s, usize i);
+struct str str_slice(struct str s, usize start, usize end);
+
+bool str_equal(struct str s1, struct str s2);
+bool str_all(struct str s, u8 b);
+
 void _assert_zero(struct str);
 #define assert_zero(p) (_assert_zero(str_make((p), sizeof(*(p)))))
-#define zero_out(p) (memset((p), 0, sizeof(*(p))))
+#define zero_out(p) (str_zero(str_make((p), sizeof(*(p)))))
 
 // strbuilder.c
 
@@ -67,17 +78,18 @@ struct arena {
 
 void arena_init(struct arena *a, struct str buf);
 
-void *_alloc(struct arena *a, usize size, usize align);
-void *_alloc_u(struct arena *a, usize size, usize align);
-#define alloc(a, t, n) (cast(t *) _alloc((a), sizeof(t) * (n), alignof(t)))
-#define alloc_u(a, t, n) (cast(t *) _alloc_u((a), sizeof(t) * (n), alignof(t)))
 struct str alloc_str(struct arena *a, usize size, usize align);
 struct str alloc_str_u(struct arena *a, usize size, usize align);
+#define alloc(a, t, n) (cast(t *) alloc_str((a), sizeof(t) * (n), alignof(t)).p)
+#define alloc_u(a, t, n)                                                       \
+	(cast(t *) alloc_str_u((a), sizeof(t) * (n), alignof(t)).p)
 
+struct str alloc_copy_str(struct arena *a, struct str src, usize align);
 void *_alloc_copy(struct arena *a, void *data, usize size, usize align);
 #define alloc_copy(a, t, v, n)                                                 \
-	(cast(t *) _alloc_copy((a), (v), sizeof(t) * (n), alignof(t)))
-struct str alloc_copy_str(struct arena *a, struct str from, usize align);
+	(cast(t *) alloc_copy_str(                                             \
+	        (a), str_make((v), sizeof(t) * (n)), alignof(t))               \
+	                .p)
 
 struct arena_temp {
 	struct arena *a;

@@ -48,33 +48,29 @@ run_component_tests(struct mem *m, struct str path, test_fn f)
 		usize size = cast(usize) s.st_size;
 
 		// + 1 for null terminator
-		u8 *content = alloc(&m->temp, u8, size + 1);
-		read(fd, content, size);
+		struct str content = alloc_str(&m->temp, size + 1, 1);
+		read(fd, content.p, size);
+		content = str_prefix(content, size); // cut off the null
 
 		// Find where the divider between input source and expect
 		// output is located in the file contents.
 
-		char *divider_p =
-		        strstr(cast(char *) content, cast(char *) DIVIDER.p);
+		u8 *divider_p = cast(u8 *)
+		        strstr(cast(char *) content.p, cast(char *) DIVIDER.p);
 		if (divider_p == NULL) {
 			fprintf(stderr, "test %.*s has no divider.\n",
 			        cast(int) entry_path.n, entry_path.p);
 			continue;
 		}
 
-		usize divider_pos = cast(usize)(cast(u8 *) divider_p - content);
-		struct str input = str_make(content, divider_pos);
-
-		u8 *expect_start = content + divider_pos + DIVIDER.n;
-		usize expect_length = size - divider_pos - DIVIDER.n;
+		usize divider_pos = cast(usize)(divider_p - content.p);
+		struct str input = str_prefix(content, divider_pos);
 		struct str expect_output =
-		        str_make(expect_start, expect_length);
+		        str_suffix(content, divider_pos + DIVIDER.n);
 
 		struct str actual_output = f(m, input);
 
-		if (expect_output.n == actual_output.n &&
-		        memcmp(expect_output.p, actual_output.p,
-		                expect_output.n) == 0) {
+		if (str_equal(expect_output, actual_output)) {
 			printf("*** pass - %.*s\n", cast(int) entry_path.n,
 			        entry_path.p);
 			continue;

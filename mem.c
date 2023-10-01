@@ -35,12 +35,11 @@ os_alloc(usize nbytes)
 static void
 push_mem(struct str *block, struct mem *out)
 {
-	usize total = PERM_MEM_SIZE + TEMP_MEM_SIZE;
-	assert(block->n >= total);
-
-	struct str perm_buf = str_make(block->p, PERM_MEM_SIZE);
-	struct str temp_buf = str_make(block->p + PERM_MEM_SIZE, TEMP_MEM_SIZE);
-	*block = str_make(block->p + total, block->n - total);
+	struct str b = *block;
+	struct str perm_buf = str_prefix(b, PERM_MEM_SIZE);
+	struct str temp_buf =
+	        str_slice(b, PERM_MEM_SIZE, PERM_MEM_SIZE + TEMP_MEM_SIZE);
+	*block = str_suffix(b, PERM_MEM_SIZE + TEMP_MEM_SIZE);
 
 	arena_init(&out->perm, perm_buf);
 	arena_init(&out->temp, temp_buf);
