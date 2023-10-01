@@ -1,8 +1,9 @@
 #include "all.h"
 
 struct str
-str_make(void *p, usize n)
+str_make(void *p, imm n)
 {
+	assert(n >= 0);
 	struct str s;
 	s.p = p;
 	s.n = n;
@@ -13,13 +14,13 @@ void
 str_copy(struct str dst, struct str src)
 {
 	assert(dst.n == src.n);
-	memcpy(dst.p, src.p, dst.n);
+	memcpy(dst.p, src.p, cast(umm) dst.n);
 }
 
 void
 str_fill(struct str s, u8 b)
 {
-	memset(s.p, b, s.n);
+	memset(s.p, b, cast(umm) s.n);
 }
 
 void
@@ -29,10 +30,10 @@ str_zero(struct str s)
 }
 
 struct str
-str_slice(struct str s, usize start, usize end)
+str_slice(struct str s, imm start, imm end)
 {
-	assert(start <= s.n);
-	assert(end <= s.n);
+	assert(start >= 0 && start <= s.n);
+	assert(end >= 0 && end <= s.n);
 	return str_make(s.p + start, end - start);
 }
 
@@ -47,7 +48,7 @@ str_equal(struct str s1, struct str s2)
 		return true;
 	}
 
-	return memcmp(s1.p, s2.p, s1.n) == 0;
+	return memcmp(s1.p, s2.p, cast(umm) s1.n) == 0;
 }
 
 bool
@@ -68,7 +69,7 @@ void
 _assert_zero(struct str s)
 {
 	u8 *p = cast(u8 *) s.p;
-	for (usize i = 0; i < s.n; i++) {
+	for (imm i = 0; i < s.n; i++) {
 		assert(p[i] == 0);
 	}
 }

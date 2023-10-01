@@ -11,9 +11,12 @@ arena_init(struct arena *a, struct str buf)
 }
 
 static struct str
-alloc_uninit(struct arena *a, usize size, usize align)
+alloc_uninit(struct arena *a, imm size, imm align)
 {
-	usize padding = align - (cast(usize)(a->buf.p + a->used) % align);
+	assert(size >= 0);
+	assert(align >= 1);
+
+	imm padding = align - (cast(imm)(a->buf.p + a->used) % align);
 	if (padding == align) {
 		padding = 0;
 	}
@@ -31,12 +34,12 @@ alloc_uninit(struct arena *a, usize size, usize align)
 }
 
 struct str
-alloc_str(struct arena *a, usize size, usize align)
+alloc_str(struct arena *a, imm size, imm align)
 {
-	usize peak_used = a->peak_used;
+	imm peak_used = a->peak_used;
 	struct str s = alloc_uninit(a, size, align);
-	usize allocation_start = cast(usize)(s.p - a->buf.p);
-	usize allocation_end = allocation_start + size - 1;
+	imm allocation_start = s.p - a->buf.p;
+	imm allocation_end = allocation_start + size - 1;
 
 	if (allocation_end < peak_used) {
 		// In this case the entirety of the allocation is reused memory,
@@ -69,7 +72,7 @@ alloc_str(struct arena *a, usize size, usize align)
 }
 
 struct str
-alloc_str_u(struct arena *a, usize size, usize align)
+alloc_str_u(struct arena *a, imm size, imm align)
 {
 	struct str s = alloc_uninit(a, size, align);
 #if DEVELOP
@@ -79,7 +82,7 @@ alloc_str_u(struct arena *a, usize size, usize align)
 }
 
 struct str
-alloc_copy_str(struct arena *a, struct str src, usize align)
+alloc_copy_str(struct arena *a, struct str src, imm align)
 {
 	struct str dst = alloc_uninit(a, src.n, align);
 	str_copy(dst, src);
@@ -87,7 +90,7 @@ alloc_copy_str(struct arena *a, struct str src, usize align)
 }
 
 void *
-_alloc_copy(struct arena *a, void *data, usize size, usize align)
+_alloc_copy(struct arena *a, void *data, imm size, imm align)
 {
 	struct str dst = alloc_uninit(a, size, align);
 	struct str src = str_make(data, size);

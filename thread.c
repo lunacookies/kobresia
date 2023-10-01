@@ -4,10 +4,10 @@ u32
 core_count(void)
 {
 	u32 value;
-	usize size = size_of(u32);
+	umm size = cast(umm) size_of(u32);
 	i32 code = sysctlbyname("hw.logicalcpu_max", &value, &size, NULL, 0);
 	assert(code == 0);
-	assert(size == size_of(u32));
+	assert(size == cast(umm) size_of(u32));
 	assert(value > 0);
 	return value;
 }

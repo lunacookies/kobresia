@@ -28,7 +28,7 @@ run_component_tests(struct mem *m, struct str path, test_fn f)
 
 		// + 1 for slash
 		// + 1 for null terminator
-		usize entry_path_length = path.n + 1 + entry->d_namlen + 1;
+		imm entry_path_length = path.n + 1 + entry->d_namlen + 1;
 		struct str entry_path =
 		        alloc_str(&m->temp, entry_path_length, 1);
 		struct strbuilder entry_path_builder;
@@ -45,11 +45,11 @@ run_component_tests(struct mem *m, struct str path, test_fn f)
 		i32 fd = open(cast(char *) entry_path.p, O_RDONLY);
 		struct stat s;
 		fstat(fd, &s);
-		usize size = cast(usize) s.st_size;
+		imm size = cast(imm) s.st_size;
 
 		// + 1 for null terminator
 		struct str content = alloc_str(&m->temp, size + 1, 1);
-		read(fd, content.p, size);
+		read(fd, content.p, cast(umm) size);
 		content = str_slice(content, 0, size); // cut off the null
 
 		// Find where the divider between input source and expect
@@ -63,7 +63,7 @@ run_component_tests(struct mem *m, struct str path, test_fn f)
 			continue;
 		}
 
-		usize divider_pos = cast(usize)(divider_p - content.p);
+		imm divider_pos = cast(imm)(divider_p - content.p);
 		struct str input = str_slice(content, 0, divider_pos);
 		struct str expect_output =
 		        str_slice(content, divider_pos + DIVIDER.n, content.n);

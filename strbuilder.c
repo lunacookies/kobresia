@@ -46,8 +46,8 @@ strbuilder_printf(struct strbuilder *sb, char *fmt, ...)
 
 	// vsnprintf returns the number of bytes it would have written,
 	// were the buffer we pass it of unlimited size.
-	usize len = cast(usize)
-	        vsnprintf(cast(char *) remaining.p, remaining.n, fmt, args);
+	imm len = cast(imm) vsnprintf(
+	        cast(char *) remaining.p, cast(umm) remaining.n, fmt, args);
 	assert(len <= remaining.n);
 	sb->used += len;
 

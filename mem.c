@@ -5,7 +5,7 @@ enum {
 	TEMP_SIZE = 100 * MEBIBYTE,
 };
 
-static usize
+static imm
 page_size(void)
 {
 	i32 s = getpagesize();
@@ -14,15 +14,16 @@ page_size(void)
 		early_death(S("failed to get page size"));
 	}
 
-	return cast(usize) s;
+	return cast(imm) s;
 }
 
 struct str
-os_alloc(usize nbytes)
+os_alloc(imm nbytes)
 {
+	assert(nbytes > 0);
 	assert(nbytes % page_size() == 0);
 
-	void *p = mmap(NULL, nbytes, PROT_READ | PROT_WRITE,
+	void *p = mmap(NULL, cast(umm) nbytes, PROT_READ | PROT_WRITE,
 	        MAP_ANON | MAP_PRIVATE, -1, 0);
 
 	if (p == MAP_FAILED) {
@@ -49,7 +50,7 @@ proc_mem_alloc(struct proc_mem *pm, u32 core_count)
 {
 	assert_zero(pm);
 
-	usize total = (core_count + 1) * (PERM_SIZE + TEMP_SIZE);
+	imm total = (core_count + 1) * (PERM_SIZE + TEMP_SIZE);
 	struct str block = os_alloc(total);
 
 	push_mem(&block, &pm->main);

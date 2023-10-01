@@ -12,13 +12,16 @@ enum {
 struct dense {
 	struct strbuilder data;
 	u32 *starts;
-	usize count;
+	imm count;
 };
 
 static void
-dense_init(struct dense *d, struct mem *m, usize count, usize elem_len)
+dense_init(struct dense *d, struct mem *m, imm count, imm elem_len)
 {
 	assert_zero(d);
+	assert(count > 0);
+	assert(elem_len > 0);
+
 	struct str data_buf = alloc_str_u(&m->temp, elem_len * count, 1);
 	strbuilder_init(&d->data, data_buf);
 	d->starts = alloc_u(&m->temp, u32, count + 1);
