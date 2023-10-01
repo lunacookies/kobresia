@@ -1,8 +1,8 @@
 #include "all.h"
 
 enum {
-	PERM_MEM_SIZE = 1 * MEBIBYTE,
-	TEMP_MEM_SIZE = 100 * MEBIBYTE,
+	PERM_SIZE = 1 * MEBIBYTE,
+	TEMP_SIZE = 100 * MEBIBYTE,
 };
 
 static usize
@@ -36,10 +36,9 @@ static void
 push_mem(struct str *block, struct mem *out)
 {
 	struct str b = *block;
-	struct str perm_buf = str_prefix(b, PERM_MEM_SIZE);
-	struct str temp_buf =
-	        str_slice(b, PERM_MEM_SIZE, PERM_MEM_SIZE + TEMP_MEM_SIZE);
-	*block = str_suffix(b, PERM_MEM_SIZE + TEMP_MEM_SIZE);
+	struct str perm_buf = str_prefix(b, PERM_SIZE);
+	struct str temp_buf = str_slice(b, PERM_SIZE, PERM_SIZE + TEMP_SIZE);
+	*block = str_suffix(b, PERM_SIZE + TEMP_SIZE);
 
 	arena_init(&out->perm, perm_buf);
 	arena_init(&out->temp, temp_buf);
@@ -50,7 +49,7 @@ proc_mem_alloc(struct proc_mem *pm, u32 core_count)
 {
 	assert_zero(pm);
 
-	usize total = (core_count + 1) * (PERM_MEM_SIZE + TEMP_MEM_SIZE);
+	usize total = (core_count + 1) * (PERM_SIZE + TEMP_SIZE);
 	struct str block = os_alloc(total);
 
 	push_mem(&block, &pm->main);
